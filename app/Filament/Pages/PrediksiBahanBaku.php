@@ -2,10 +2,12 @@
 
 namespace App\Filament\Pages;
 
+use Carbon\Carbon;
 use Filament\Pages\Page;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 class PrediksiBahanBaku extends Page
 {
@@ -19,6 +21,11 @@ class PrediksiBahanBaku extends Page
 
     protected static ?int $navigationSort = 14;
 
+    // ── Input rentang tanggal dari admin ───────────────────────────────
+    public string $inputDateFrom  = '';
+    public string $inputDateTo    = '';
+    public string $dateRangeError = '';
+
     // ── State ──────────────────────────────────────────────────────────
     public bool    $hasResult = false;
     public ?string $lastRunAt = null;
@@ -31,8 +38,8 @@ class PrediksiBahanBaku extends Page
     public string $dateTo              = '';
     public string $dateForecastFrom    = '';
     public string $dateForecastTo      = '';
-    public array  $predictions         = [];   // per-bahan: nama, satuan, forecast, mae, rmse, mape, smape
-    public array  $summaryTable        = [];   // ringkasan semua bahan baku
+    public array  $predictions         = [];
+    public array  $summaryTable        = [];
     public array  $preprocessLogs      = [];
 
     // ── Grafik (base64 PNG) ────────────────────────────────────────────
@@ -52,13 +59,50 @@ class PrediksiBahanBaku extends Page
         return 'Prediksi Penggunaan Bahan Baku';
     }
 
+    // ── Validasi rentang tanggal (min 3 bulan) ─────────────────────────
+    public function isDateRangeValid(): bool
+    {
+        if (! $this->inputDateFrom || ! $this->inputDateTo) {
+            return false;
+        }
+        try {
+            $from = Carbon::parse($this->inputDateFrom);
+            $to   = Carbon::parse($this->inputDateTo);
+            return $to->greaterThan($from) && $from->diffInMonths($to) >= 3;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
     // ── Panggil FastAPI endpoint prediksi bahan baku ───────────────────
     public function runPrediction(): void
     {
-        $this->errorMsg = null;
+        $this->errorMsg       = null;
+        $this->dateRangeError = '';
+
+        if (! $this->inputDateFrom || ! $this->inputDateTo) {
+            $this->dateRangeError = 'Harap isi rentang tanggal data penggunaan bahan baku terlebih dahulu.';
+            return;
+        }
+
+        $from = Carbon::parse($this->inputDateFrom);
+        $to   = Carbon::parse($this->inputDateTo);
+
+        if ($to->lessThanOrEqualTo($from)) {
+            $this->dateRangeError = 'Tanggal akhir harus lebih besar dari tanggal awal.';
+            return;
+        }
+
+        if ($from->diffInMonths($to) < 3) {
+            $this->dateRangeError = 'Rentang tanggal data penggunaan bahan baku minimal 3 bulan.';
+            return;
+        }
 
         try {
-            $response = Http::timeout(600)->post('http://127.0.0.1:8001/prediction-bahan-baku');
+            $response = Http::timeout(600)->asJson()->post('http://127.0.0.1:8001/prediction-bahan-baku', [
+                'date_from' => $this->inputDateFrom,
+                'date_to'   => $this->inputDateTo,
+            ]);
 
             if (! $response->successful()) {
                 throw new \Exception('FastAPI merespons dengan status ' . $response->status());
@@ -90,6 +134,38 @@ class PrediksiBahanBaku extends Page
             $this->hasResult = true;
             $this->lastRunAt = now()->locale('id')->translatedFormat('d M Y, H:i');
 
+            // ── Simpan ke history (max 3, unik per date range) ──────────────
+            $history   = Cache::get('prediksi_bahan_baku_results_history', []);
+            $inputFrom = $this->inputDateFrom;
+            $inputTo   = $this->inputDateTo;
+
+            // Hapus entry dengan date range yang sama (replace)
+            $history = array_values(array_filter(
+                $history,
+                fn($h) => !(($h['input_date_from'] ?? '') === $inputFrom
+                          && ($h['input_date_to']   ?? '') === $inputTo)
+            ));
+
+            // Tambahkan entry baru di awal (terbaru pertama)
+            array_unshift($history, [
+                'run_at'               => $this->lastRunAt,
+                'input_date_from'      => $this->inputDateFrom,
+                'input_date_to'        => $this->inputDateTo,
+                'date_from'            => $this->dateFrom,
+                'date_to'              => $this->dateTo,
+                'date_forecast_from'   => $this->dateForecastFrom,
+                'date_forecast_to'     => $this->dateForecastTo,
+                'total_ingredients'    => $this->totalIngredients,
+                'forecast_days'        => $this->forecastDays,
+                'predictions'          => $this->predictions,
+                'summary_table'        => $this->summaryTable,
+                'chart_feature_importance' => $this->chartFeatureImportance,
+            ]);
+
+            // Simpan maksimal 3 entry
+            $history = array_slice($history, 0, 3);
+            Cache::put('prediksi_bahan_baku_results_history', $history, now()->addDays(30));
+
             Notification::make()
                 ->title('Prediksi Bahan Baku selesai!')
                 ->body("Berhasil memprediksi {$this->totalIngredients} bahan baku untuk {$this->forecastDays} hari ke depan.")
@@ -115,11 +191,8 @@ class PrediksiBahanBaku extends Page
                 ->label('Jalankan Prediksi Bahan Baku')
                 ->icon('heroicon-o-sparkles')
                 ->color('primary')
-                ->requiresConfirmation()
-                ->modalHeading('Jalankan Prediksi Penggunaan Bahan Baku')
-                ->modalDescription('Proses ini akan membaca data pemakaian bahan baku harian dan memprediksi kebutuhan tiap bahan baku untuk beberapa hari ke depan menggunakan model Time Series Prophet. Pastikan FastAPI sudah berjalan. Proses mungkin memakan waktu beberapa menit. Lanjutkan?')
-                ->modalSubmitActionLabel('Ya, Jalankan')
-                ->action(fn () => $this->runPrediction()),
+                ->disabled(fn() => ! $this->isDateRangeValid())
+                ->action($this->runPrediction(...)),
         ];
     }
 }

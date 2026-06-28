@@ -1,216 +1,338 @@
 <x-filament-panels::page>
 
-    {{-- ── Error ─────────────────────────────────────────────────────── --}}
-    @if($errorMsg)
-        <div class="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4 mb-6">
-            <p class="text-sm font-semibold text-red-700 dark:text-red-300">Prediksi gagal</p>
-            <p class="text-xs text-red-600 dark:text-red-400 mt-1">{{ $errorMsg }}</p>
-            <p class="text-xs text-red-500 mt-2">
-                Pastikan FastAPI sudah berjalan:
-                <code class="bg-red-100 dark:bg-red-900 px-1.5 py-0.5 rounded font-mono">
-                    uvicorn datamining.api:app --port 8001 --reload
-                </code>
-            </p>
-        </div>
-    @endif
-
-    {{-- ── Belum ada hasil ───────────────────────────────────────────── --}}
-    @if(! $hasResult)
-        <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-10 text-center">
-            <p class="text-base font-semibold text-gray-700 dark:text-gray-200">Belum Ada Hasil Prediksi</p>
-            <p class="text-sm text-gray-400 mt-2">
-                Tekan <span class="font-semibold text-primary-600">"Jalankan Prediksi"</span> di kanan atas untuk memulai analisis.
-            </p>
-            <div class="mt-5 inline-block text-left bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-3 text-xs font-mono text-gray-500 dark:text-gray-400">
-                uvicorn datamining.api:app --port 8001 --reload
+{{-- ════════════════════════════════════════════════════════════════════ --}}
+{{-- FORM INPUT RENTANG TANGGAL DATA PENJUALAN                           --}}
+{{-- ════════════════════════════════════════════════════════════════════ --}}
+<div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/40">
+        <h2 class="text-base font-bold text-gray-900 dark:text-white">Rentang Tanggal Data Penjualan</h2>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            Pilih rentang tanggal data transaksi yang akan digunakan sebagai dasar prediksi (minimal 3 bulan).
+        </p>
+    </div>
+    <div class="px-6 py-5">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2" style="max-width:560px;">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5">
+                    Tanggal Awal
+                </label>
+                <input
+                    type="date"
+                    wire:model.live="inputDateFrom"
+                    class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-800 dark:text-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5">
+                    Tanggal Akhir
+                </label>
+                <input
+                    type="date"
+                    wire:model.live="inputDateTo"
+                    class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-800 dark:text-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
             </div>
         </div>
 
-    @else
-    {{-- ═══════════════════════════════════════════════════════════════ --}}
-    {{-- HASIL PREDIKSI                                                   --}}
-    {{-- ═══════════════════════════════════════════════════════════════ --}}
+        {{-- Petunjuk & validasi --}}
+        <div class="mt-4">
+            @if(! $inputDateFrom || ! $inputDateTo)
+                <div class="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 px-4 py-3">
+                    <p class="text-xs text-blue-700 dark:text-blue-300">
+                        Isi rentang tanggal data riwayat penjualan (transaksi) yang akan digunakan untuk diolah pada
+                        data mining prediksi menu penjualan, kemudian tekan tombol
+                        <span class="font-semibold">"Jalankan Prediksi"</span> di kanan atas.
+                    </p>
+                </div>
 
-        {{-- Meta bar --}}
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-5 text-xs text-gray-400 dark:text-gray-500">
-            <span>Dijalankan: <span class="font-medium text-gray-600 dark:text-gray-300">{{ $lastRunAt }}</span></span>
-            <span>
-                Data historis: <span class="font-medium text-gray-600 dark:text-gray-300">{{ $dateFrom }} s/d {{ $dateTo }}</span>
-                &nbsp;·&nbsp;
-                Periode prediksi: <span class="font-medium text-primary-600 dark:text-primary-400">{{ $dateForecastFrom }} s/d {{ $dateForecastTo }}</span>
+            @elseif($dateRangeError)
+                <div class="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3">
+                    <p class="text-xs text-red-700 dark:text-red-300 font-medium">{{ $dateRangeError }}</p>
+                </div>
+
+            @else
+                <div class="rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 px-4 py-3">
+                    <p class="text-xs text-green-700 dark:text-green-300">
+                        Rentang tanggal valid:
+                        <span class="font-semibold">{{ \Carbon\Carbon::parse($inputDateFrom)->translatedFormat('d M Y') }}</span>
+                        s/d
+                        <span class="font-semibold">{{ \Carbon\Carbon::parse($inputDateTo)->translatedFormat('d M Y') }}</span>.
+                        Tombol <span class="font-semibold">"Jalankan Prediksi"</span> siap digunakan.
+                    </p>
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+
+{{-- ── Error dari FastAPI ─────────────────────────────────────────────── --}}
+@if($errorMsg)
+    <div class="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4 mb-6">
+        <p class="text-sm font-semibold text-red-700 dark:text-red-300">Prediksi gagal</p>
+        <p class="text-xs text-red-600 dark:text-red-400 mt-1">{{ $errorMsg }}</p>
+        <p class="text-xs text-red-500 mt-2">
+            Pastikan FastAPI sudah berjalan:
+            <code class="bg-red-100 dark:bg-red-900 px-1.5 py-0.5 rounded font-mono">
+                uvicorn datamining.api:app --port 8001 --reload
+            </code>
+        </p>
+    </div>
+@endif
+
+{{-- ── Belum ada hasil ────────────────────────────────────────────────── --}}
+@if(! $hasResult && ! $errorMsg)
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-10 text-center">
+        <p class="text-base font-semibold text-gray-700 dark:text-gray-200">Belum Ada Hasil Prediksi</p>
+        <p class="text-sm text-gray-400 mt-2">
+            Isi rentang tanggal di atas, lalu tekan
+            <span class="font-semibold text-primary-600">"Jalankan Prediksi"</span> untuk memulai analisis.
+        </p>
+    </div>
+@endif
+
+{{-- ════════════════════════════════════════════════════════════════════ --}}
+{{-- HASIL PREDIKSI                                                       --}}
+{{-- ════════════════════════════════════════════════════════════════════ --}}
+@if($hasResult)
+
+    {{-- Meta bar --}}
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6 px-1">
+        <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-700 px-3 py-1.5 text-xs font-medium text-primary-700 dark:text-primary-300">
+                Dijalankan: {{ $lastRunAt }}
             </span>
         </div>
+        <div class="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+            <span>
+                Data penjualan:
+                <span class="font-semibold text-gray-700 dark:text-gray-200">{{ $dateFrom }}</span>
+                s/d
+                <span class="font-semibold text-gray-700 dark:text-gray-200">{{ $dateTo }}</span>
+            </span>
+            <span class="text-gray-300 dark:text-gray-600">·</span>
+            <span>
+                Periode prediksi:
+                <span class="font-semibold text-primary-600 dark:text-primary-400">{{ $dateForecastFrom }}</span>
+                s/d
+                <span class="font-semibold text-primary-600 dark:text-primary-400">{{ $dateForecastTo }}</span>
+            </span>
+        </div>
+    </div>
 
-        {{-- ══════════════════════════════════════════════════════════ --}}
-        {{-- 1. PREDIKSI PENJUALAN 2 HARI KE DEPAN                      --}}
-        {{-- ══════════════════════════════════════════════════════════ --}}
-        @if(count($predictions))
-        <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    {{-- PROSES 1 — LOG PREPROCESSING                                   --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    @if(count($preprocessLogs))
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-base font-bold text-gray-900 dark:text-white">Proses 1 — Informasi Data &amp; Preprocessing</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Tahapan pemrosesan data sebelum model dilatih</p>
+        </div>
+        <div class="px-6 py-4">
+            <ol class="space-y-3">
+                @foreach($preprocessLogs as $i => $log)
+                <li class="flex gap-3">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 text-xs font-bold flex items-center justify-center mt-0.5">
+                        {{ $i + 1 }}
+                    </span>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $log['tahap'] ?? '' }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $log['detail'] ?? '' }}</p>
+                    </div>
+                </li>
+                @endforeach
+            </ol>
+        </div>
+    </div>
+    @endif
 
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 class="text-base font-bold text-gray-900 dark:text-white">Prediksi Penjualan 2 Hari ke Depan</h2>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Periode: <span class="font-medium">{{ $dateForecastFrom }}</span> s/d <span class="font-medium">{{ $dateForecastTo }}</span>
-                </p>
-            </div>
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    {{-- PROSES 2 — EVALUASI MODEL (MAE saja)                           --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    @if(count($summaryTable))
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-base font-bold text-gray-900 dark:text-white">Proses 2 — Evaluasi Model per Menu</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Model dilatih pada data train (75%) dan dievaluasi pada data test (25%)
+            </p>
+        </div>
+        <div class="overflow-x-auto">
+            <table style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr style="background-color:#1e40af;">
+                        <th style="padding:12px 20px; text-align:left; font-size:0.75rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Nama Menu</th>
+                        <th style="padding:12px 20px; text-align:center; font-size:0.75rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Model</th>
+                        <th style="padding:12px 20px; text-align:right; font-size:0.75rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">MAE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($summaryTable as $i => $row)
+                    <tr style="background-color:{{ $i % 2 === 0 ? '#ffffff' : '#f8fafc' }}; border-bottom:1px solid #e2e8f0;">
+                        <td style="padding:11px 20px; font-size:0.875rem; font-weight:600; color:#1e40af;">
+                            {{ $row['nama_menu'] }}
+                        </td>
+                        <td style="padding:11px 20px; text-align:center; font-size:0.75rem; color:#6b7280;">
+                            <span style="display:inline-block; background:#ede9fe; color:#7c3aed; padding:2px 10px; border-radius:9999px; font-weight:600;">
+                                {{ $row['model'] ?? 'Prophet' }}
+                            </span>
+                        </td>
+                        <td style="padding:11px 20px; text-align:right; font-size:0.875rem; font-weight:700; color:#1e293b;">
+                            {{ isset($row['mae']) ? number_format($row['mae'], 2) : '-' }}
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <div class="px-6 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/20">
+            <p class="text-xs text-gray-400">
+                <span class="font-semibold text-gray-500 dark:text-gray-300">MAE</span>
+                — Mean Absolute Error: rata-rata selisih absolut antara nilai aktual dan prediksi pada data test.
+                Semakin kecil nilainya, semakin akurat model.
+            </p>
+        </div>
+    </div>
+    @endif
 
-            @foreach($predictions as $pred)
-            <div class="border-b border-gray-100 dark:border-gray-700/60 last:border-0">
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    {{-- OUTPUT 1 — RINGKASAN TOTAL PREDIKSI (bar chart)                --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    @if($chartForecastAll)
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-base font-bold text-gray-900 dark:text-white">Output 1 — Ringkasan Total Prediksi Penjualan</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Total prediksi unit penjualan per menu untuk periode
+                <span class="font-medium text-primary-600 dark:text-primary-400">{{ $dateForecastFrom }} s/d {{ $dateForecastTo }}</span>
+            </p>
+        </div>
+        <div class="p-5">
+            <img src="data:image/png;base64,{{ $chartForecastAll }}"
+                 alt="Ringkasan Total Prediksi" class="w-full rounded-lg"/>
+        </div>
+    </div>
+    @endif
 
-                {{-- Sub-header per menu --}}
-                <div class="px-6 py-2.5 bg-gray-50 dark:bg-gray-700/40 flex flex-wrap items-center gap-3">
-                    <span class="font-bold text-sm text-gray-800 dark:text-white">{{ $pred['nama_menu'] }}</span>
-                    <span class="text-xs text-gray-400">
-                        Total:
-                        <span class="font-semibold text-gray-700 dark:text-gray-200">
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    {{-- OUTPUT 2 — PREDIKSI PENJUALAN 2 HARI KE DEPAN (tabel per menu) --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    @if(count($predictions))
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-base font-bold text-gray-900 dark:text-white">Output 2 — Prediksi Penjualan 2 Hari ke Depan</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Periode prediksi:
+                <span class="font-medium text-primary-600 dark:text-primary-400">{{ $dateForecastFrom }}</span>
+                s/d
+                <span class="font-medium text-primary-600 dark:text-primary-400">{{ $dateForecastTo }}</span>
+            </p>
+        </div>
+
+        @foreach($predictions as $pred)
+        <div class="border-b border-gray-100 dark:border-gray-700/60 last:border-0">
+
+            {{-- Sub-header per menu --}}
+            <div class="px-6 py-3 bg-gray-50 dark:bg-gray-700/30 flex flex-wrap items-center justify-between gap-2">
+                <span class="font-bold text-sm text-gray-800 dark:text-white">{{ $pred['nama_menu'] }}</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                        Total prediksi:
+                        <span class="font-bold text-primary-600 dark:text-primary-400">
                             {{ number_format($pred['total_forecast'] ?? 0, 0) }} unit
                         </span>
                     </span>
+                    <span class="text-xs text-gray-400">|</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                        MAE: <span class="font-semibold text-gray-700 dark:text-gray-300">{{ number_format($pred['mae'] ?? 0, 2) }}</span>
+                    </span>
                 </div>
-
-                {{-- Tabel forecast harian --}}
-                @if(count($pred['forecast'] ?? []))
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="border-b border-gray-100 dark:border-gray-700">
-                                <th class="py-2.5 px-5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Tanggal</th>
-                                <th class="py-2.5 px-5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Hari</th>
-                                <th class="py-2.5 px-5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Tipe</th>
-                                <th class="py-2.5 px-5 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Prediksi</th>
-                                <th class="py-2.5 px-5 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Batas Bawah</th>
-                                <th class="py-2.5 px-5 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Batas Atas</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50 dark:divide-gray-700/30">
-                            @foreach($pred['forecast'] as $f)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/20 transition-colors">
-                                <td class="py-3 px-5 font-mono text-sm text-gray-700 dark:text-gray-200">{{ $f['tanggal'] ?? '-' }}</td>
-                                <td class="py-3 px-5 text-gray-700 dark:text-gray-200">{{ $f['hari'] ?? '-' }}</td>
-                                <td class="py-3 px-5">
-                                    @if(($f['day_type'] ?? '') === 'Weekend')
-                                        <span class="fi-badge flex items-center justify-center gap-x-1 rounded-md text-xs font-medium ring-1 ring-inset px-2 min-w-[theme(spacing.6)] py-1 fi-color-custom"
-                                              style="background-color: rgb(254 243 199); color: rgb(146 64 14); --tw-ring-color: rgb(253 230 138);">
-                                            Weekend
-                                        </span>
-                                    @else
-                                        <span class="fi-badge flex items-center justify-center gap-x-1 rounded-md text-xs font-medium ring-1 ring-inset px-2 min-w-[theme(spacing.6)] py-1 fi-color-custom"
-                                              style="background-color: rgb(219 234 254); color: rgb(29 78 216); --tw-ring-color: rgb(191 219 254);">
-                                            Weekday
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="py-3 px-5 text-right">
-                                    <span class="fi-badge flex items-center justify-center gap-x-1 rounded-md text-xs font-medium ring-1 ring-inset px-2 min-w-[theme(spacing.6)] py-1 fi-color-primary tabular-nums ml-auto w-fit"
-                                          style="background-color: rgb(224 231 255); color: rgb(67 56 202); --tw-ring-color: rgb(199 210 254);">
-                                        {{ $f['prediksi'] ?? 0 }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-5 text-right tabular-nums text-gray-500 dark:text-gray-400">{{ $f['batas_bawah'] ?? '-' }}</td>
-                                <td class="py-3 px-5 text-right tabular-nums text-gray-500 dark:text-gray-400">{{ $f['batas_atas'] ?? '-' }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                @endif
-
-            </div>
-            @endforeach
-
-        </div>
-        @endif
-
-        {{-- ══════════════════════════════════════════════════════════ --}}
-        {{-- 2. HASIL EVALUASI MODEL PER ITEM                            --}}
-        {{-- ══════════════════════════════════════════════════════════ --}}
-        @if(count($summaryTable))
-        <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
-
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 class="text-base font-bold text-gray-900 dark:text-white">Hasil Evaluasi Model per Item</h2>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">pada data test 25% (split 75:25)</p>
             </div>
 
+            {{-- Tabel forecast harian --}}
+            @if(count($pred['forecast'] ?? []))
             <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+                <table style="width:100%; border-collapse:collapse;">
                     <thead>
-                        <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/40">
-                            <th class="py-3 px-5 text-left  text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Item</th>
-                            <th class="py-3 px-5 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">MAE</th>
-                            <th class="py-3 px-5 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">RMSE</th>
-                            <th class="py-3 px-5 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">MAPE (%)</th>
-                            <th class="py-3 px-5 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">SMAPE (%)</th>
+                        <tr style="background-color:#1e40af;">
+                            <th style="padding:11px 20px; text-align:left;  font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Tanggal</th>
+                            <th style="padding:11px 20px; text-align:left;  font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Hari</th>
+                            <th style="padding:11px 20px; text-align:center; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Tipe Hari</th>
+                            <th style="padding:11px 20px; text-align:right; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Prediksi (unit)</th>
+                            <th style="padding:11px 20px; text-align:right; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Batas Bawah</th>
+                            <th style="padding:11px 20px; text-align:right; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Batas Atas</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-50 dark:divide-gray-700/30">
-                        @foreach($summaryTable as $row)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/20 transition-colors">
-                            <td class="py-3 px-5 font-semibold text-gray-800 dark:text-white">{{ $row['nama_menu'] }}</td>
-                            <td class="py-3 px-5 text-right tabular-nums text-gray-600 dark:text-gray-300">
-                                {{ isset($row['mae']) ? number_format($row['mae'], 2) : '-' }}
+                    <tbody>
+                        @foreach($pred['forecast'] as $i => $f)
+                        <tr style="background-color:{{ $i % 2 === 0 ? '#ffffff' : '#f8fafc' }}; border-bottom:1px solid #e2e8f0;">
+                            <td style="padding:11px 20px; font-size:0.875rem; color:#334155; font-family:monospace; font-weight:500;">{{ $f['tanggal'] ?? '-' }}</td>
+                            <td style="padding:11px 20px; font-size:0.875rem; color:#334155; font-weight:500;">{{ $f['hari'] ?? '-' }}</td>
+                            <td style="padding:11px 20px; text-align:center;">
+                                @if(($f['day_type'] ?? '') === 'Weekend')
+                                    <span style="display:inline-block; background:#fef3c7; color:#92400e; padding:3px 12px; border-radius:9999px; font-size:0.72rem; font-weight:600;">Weekend</span>
+                                @else
+                                    <span style="display:inline-block; background:#dbeafe; color:#1d4ed8; padding:3px 12px; border-radius:9999px; font-size:0.72rem; font-weight:600;">Weekday</span>
+                                @endif
                             </td>
-                            <td class="py-3 px-5 text-right tabular-nums text-gray-600 dark:text-gray-300">
-                                {{ isset($row['rmse']) ? number_format($row['rmse'], 2) : '-' }}
+                            <td style="padding:11px 20px; text-align:right;">
+                                <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:3px 14px; border-radius:9999px; font-size:0.875rem; font-weight:700;">{{ $f['prediksi'] ?? 0 }}</span>
                             </td>
-                            <td class="py-3 px-5 text-right tabular-nums font-semibold
-                                {{ isset($row['mape']) ? ($row['mape'] <= 20 ? 'text-success-600 dark:text-success-400' : ($row['mape'] <= 50 ? 'text-warning-600 dark:text-warning-400' : 'text-danger-600 dark:text-danger-400')) : 'text-gray-400' }}">
-                                {{ isset($row['mape']) ? number_format($row['mape'], 2) . '%' : '-' }}
-                            </td>
-                            <td class="py-3 px-5 text-right tabular-nums text-gray-600 dark:text-gray-300">
-                                {{ isset($row['smape']) ? number_format($row['smape'], 2) . '%' : '-' }}
-                            </td>
+                            <td style="padding:11px 20px; text-align:right; font-size:0.875rem; color:#64748b;">{{ $f['batas_bawah'] ?? '-' }}</td>
+                            <td style="padding:11px 20px; text-align:right; font-size:0.875rem; color:#64748b;">{{ $f['batas_atas'] ?? '-' }}</td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
+            @endif
 
-            <div class="px-6 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/20 flex flex-wrap gap-x-6 gap-y-1 text-xs text-gray-400">
-                <span><span class="font-semibold text-gray-500 dark:text-gray-300">MAE</span> — rata-rata error absolut</span>
-                <span><span class="font-semibold text-gray-500 dark:text-gray-300">RMSE</span> — sensitif terhadap outlier</span>
-                <span><span class="font-semibold text-gray-500 dark:text-gray-300">MAPE</span> — error persentase terhadap nilai aktual</span>
-                <span><span class="font-semibold text-gray-500 dark:text-gray-300">SMAPE</span> — MAPE simetris, stabil saat nilai mendekati 0</span>
-            </div>
         </div>
-        @endif
+        @endforeach
+    </div>
+    @endif
 
-        {{-- ══════════════════════════════════════════════════════════ --}}
-        {{-- 3. VISUALISASI FEATURE IMPORTANCE                           --}}
-        {{-- ══════════════════════════════════════════════════════════ --}}
-        @if($chartFeatureImportance)
-        <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 class="text-base font-bold text-gray-900 dark:text-white">Feature Importance — Weekday vs Weekend</h2>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Rata-rata penjualan berdasarkan tipe hari per menu</p>
-            </div>
-            <div class="p-4">
-                <img src="data:image/png;base64,{{ $chartFeatureImportance }}"
-                     alt="Feature Importance" class="w-full rounded"/>
-            </div>
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    {{-- OUTPUT 3 — ANALISIS RATA-RATA PENJUALAN: WEEKDAY VS WEEKEND    --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    @if($chartFeatureImportance)
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-base font-bold text-gray-900 dark:text-white">Output 3 — Analisis Rata-rata Penjualan: Weekday vs Weekend</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Perbandingan rata-rata jumlah penjualan setiap menu pada hari kerja (weekday) dan akhir pekan (weekend)
+                untuk melihat seberapa besar pengaruh tipe hari terhadap penjualan masing-masing menu.
+            </p>
         </div>
-        @endif
-
-        {{-- ══════════════════════════════════════════════════════════ --}}
-        {{-- 4. VISUALISASI PREDIKSI vs AKTUAL PER ITEM                  --}}
-        {{-- ══════════════════════════════════════════════════════════ --}}
-        @if($chartAllItems)
-        <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 class="text-base font-bold text-gray-900 dark:text-white">Visualisasi Prediksi vs Aktual per Item</h2>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Abu = data training &nbsp;·&nbsp; Biru = aktual test &nbsp;·&nbsp;
-                    Merah dashed = prediksi &nbsp;·&nbsp; Area merah = interval kepercayaan 95% &nbsp;·&nbsp;
-                    Kuning = Weekend
-                </p>
-            </div>
-            <div class="p-4">
-                <img src="data:image/png;base64,{{ $chartAllItems }}"
-                     alt="Prediksi vs Aktual Semua Menu" class="w-full rounded"/>
-            </div>
+        <div class="p-5">
+            <img src="data:image/png;base64,{{ $chartFeatureImportance }}"
+                 alt="Analisis Weekday vs Weekend" class="w-full rounded-lg"/>
         </div>
-        @endif
+    </div>
+    @endif
 
-    @endif {{-- end hasResult --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    {{-- OUTPUT 4 — VISUALISASI PREDIKSI vs AKTUAL PER ITEM             --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    @if($chartAllItems)
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-base font-bold text-gray-900 dark:text-white">Output 4 — Visualisasi Prediksi vs Aktual per Item</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                <span class="inline-block w-3 h-1 bg-gray-400 rounded mr-1"></span>Abu = data training &nbsp;·&nbsp;
+                <span class="inline-block w-3 h-1 bg-blue-500 rounded mr-1"></span>Biru = aktual test &nbsp;·&nbsp;
+                <span class="inline-block w-3 h-1 bg-red-400 rounded mr-1" style="border-top:2px dashed #f87171;"></span>Merah dashed = prediksi &nbsp;·&nbsp;
+                Area merah = interval kepercayaan 95% &nbsp;·&nbsp;
+                Kuning = Weekend
+            </p>
+        </div>
+        <div class="p-5">
+            <img src="data:image/png;base64,{{ $chartAllItems }}"
+                 alt="Prediksi vs Aktual Semua Menu" class="w-full rounded-lg"/>
+        </div>
+    </div>
+    @endif
+
+@endif {{-- end hasResult --}}
 
 </x-filament-panels::page>

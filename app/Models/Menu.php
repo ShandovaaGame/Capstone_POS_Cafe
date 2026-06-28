@@ -12,6 +12,7 @@ class Menu extends Model
         'slug',
         'description',
         'price',
+        'harga_modal',
         'cashback',
         'image',
         'is_available',
@@ -24,6 +25,7 @@ class Menu extends Model
     {
         return [
             'price'               => 'decimal:2',
+            'harga_modal'         => 'decimal:2',
             'cashback'            => 'integer',
             'student_price'       => 'decimal:2',
             'is_available'        => 'boolean',

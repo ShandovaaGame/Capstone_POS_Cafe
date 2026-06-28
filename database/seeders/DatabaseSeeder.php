@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             AssociationHistorySeeder::class,
             PredictionHistorySeeder::class,
             IngredientUsageSeeder::class,
+            RecipeIngredientSeeder::class,
         ]);
     }
 }

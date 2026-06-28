@@ -97,22 +97,6 @@ def _preprocess(df: pd.DataFrame):
     df = df.copy()
     df["Tanggal"] = pd.to_datetime(df["Tanggal"])
 
-    # Drop missing
-    before = len(df)
-    df = df.dropna(subset=["Jumlah_Digunakan", "Bahan_Baku"])
-    logs.append({
-        "tahap":  "Hapus Missing Value",
-        "detail": f"Dihapus {before - len(df)} baris nilai kosong. Sisa: {len(df)} baris.",
-    })
-
-    # Hapus duplikat (Tanggal × Bahan_Baku)
-    before = len(df)
-    df = df.drop_duplicates(subset=["Tanggal", "Bahan_Baku"])
-    logs.append({
-        "tahap":  "Hapus Duplikat",
-        "detail": f"Dihapus {before - len(df)} duplikat. Sisa: {len(df)} baris.",
-    })
-
     # Simpan peta satuan per bahan baku
     unit_map: dict = df.groupby("Bahan_Baku")["Unit"].first().to_dict()
 
@@ -366,7 +350,7 @@ def run_prediction_pipeline_bahan_baku(df: pd.DataFrame) -> dict:
     ax_fi.bar(x_pos + w / 2, df_feat["Weekend"], width=w, label="Weekend", color="#f59e0b", alpha=0.87)
     ax_fi.set_xticks(x_pos)
     ax_fi.set_xticklabels(df_feat.index, rotation=38, ha="right")
-    ax_fi.set_title("Feature Importance: Rata-rata Pemakaian Weekday vs Weekend per Bahan Baku", pad=14)
+    ax_fi.set_title("Analisis Rata-rata Jumlah Penggunaan Bahan Baku: Weekday vs Weekend", pad=14)
     ax_fi.set_xlabel("Bahan Baku", labelpad=8)
     ax_fi.set_ylabel("Rata-rata Jumlah Digunakan", labelpad=8)
     ax_fi.legend(framealpha=0.9, edgecolor="#e5e7eb", fancybox=False)

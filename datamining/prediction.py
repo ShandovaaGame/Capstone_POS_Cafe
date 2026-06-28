@@ -84,33 +84,6 @@ def preprocess(df: pd.DataFrame):
     # Cell 3
     df["Tanggal"] = pd.to_datetime(df["Tanggal"])
 
-    # Cell 4 — isi Jumlah kosong dari Subtotal/Harga, hapus baris masih kosong
-    before_miss = int(df["Jumlah"].isna().sum())
-    mask = df["Jumlah"].isna() & df["Subtotal"].notna() & (df["Harga"] != 0)
-    df.loc[mask, "Jumlah"] = (df.loc[mask, "Subtotal"] / df.loc[mask, "Harga"]).round()
-    df = df[df.drop(columns=["Jumlah"]).notna().all(axis=1)]
-    logs.append({
-        "tahap":  "Imputasi & Hapus Missing Value",
-        "detail": (
-            f"Jumlah kosong diisi dari Subtotal/Harga: "
-            f"{before_miss - int(df['Jumlah'].isna().sum())} baris. "
-            f"Sisa: {len(df)} baris."
-        ),
-    })
-
-    # Cell 6 — hapus duplikat
-    dup_count = int(
-        df.duplicated(subset=["Tanggal", "Order_id", "Nama Item", "Jumlah", "Harga"]).sum()
-    )
-    if dup_count > 0:
-        df = df.drop_duplicates(
-            subset=["Tanggal", "Order_id", "Nama Item", "Jumlah", "Harga"]
-        )
-    logs.append({
-        "tahap":  "Hapus Duplikat",
-        "detail": f"Duplikat ditemukan: {dup_count}. Sisa: {len(df)} baris.",
-    })
-
     # Cell 7–8 — urutkan & agregasi harian
     df_sorted = df.sort_values("Tanggal", ascending=True)
     df_total  = df_sorted.groupby(
@@ -232,8 +205,8 @@ def build_prophet_model(df_train: pd.DataFrame) -> Prophet:
         daily_seasonality       = False,
         seasonality_mode        = 'additive',
         interval_width          = 0.95,
-        changepoint_prior_scale = 0.03,
-        seasonality_prior_scale = 7,
+        changepoint_prior_scale = 0.07,
+        seasonality_prior_scale = 8,
         uncertainty_samples     = 100,
     )
     model.add_regressor('is_weekend')
@@ -301,7 +274,7 @@ def plot_feature_importance(item_data: dict, items: list) -> str:
     ax.set_xlabel("Item", fontsize=11)
     ax.set_ylabel("Rata-rata Penjualan", fontsize=11)
     ax.set_title(
-        "Feature Importance: Rata-rata Penjualan Weekday vs Weekend per Item",
+        "Analisis Rata-rata Penjualan per Menu: Weekday vs Weekend",
         fontsize=13, fontweight="bold",
     )
     ax.set_xticks(x)

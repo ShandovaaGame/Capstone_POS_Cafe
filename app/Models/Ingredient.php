@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -20,24 +21,31 @@ class Ingredient extends Model
         'sdt' => 'Sendok Teh (sdt)',
     ];
 
+    const BATCH_MODE_FIFO = 'fifo';
+    const BATCH_MODE_FEFO = 'fefo';
+    const BATCH_MODE_CUSTOM = 'custom';
+
     protected $fillable = [
         'name',
         'unit',
         'low_stock_threshold',
-        'is_active',
+        'batch_mode',
     ];
 
     protected function casts(): array
     {
         return [
-            'is_active' => 'boolean',
             'low_stock_threshold' => 'decimal:2',
         ];
     }
 
-    public function scopeActive($query)
+    public static function batchModes(): array
     {
-        return $query->where('is_active', true);
+        return [
+            self::BATCH_MODE_FEFO => 'FEFO (First Expired First Out)',
+            self::BATCH_MODE_FIFO => 'FIFO (First In First Out)',
+            self::BATCH_MODE_CUSTOM => 'Custom (Manual Order)',
+        ];
     }
 
     public function batches()
@@ -59,11 +67,6 @@ class Ingredient extends Model
     public function stockMovements()
     {
         return $this->hasMany(StockMovement::class);
-    }
-
-    public function wasteRecords()
-    {
-        return $this->hasMany(WasteRecord::class);
     }
 
     public function stockAdjustments()

@@ -175,101 +175,96 @@
         @endif
 
         {{-- ══════════════════════════════════════════════════════════════════ --}}
-        {{-- VISUALISASI (Top Rules chart + Freq Item chart)                    --}}
+        {{-- VISUALISASI Top Rules                                              --}}
         {{-- ══════════════════════════════════════════════════════════════════ --}}
-        @if($chTopRules || $chFreqItem)
-        <div class="grid grid-cols-1 {{ ($chTopRules && $chFreqItem) ? 'md:grid-cols-2' : '' }} gap-6 mb-6">
-            @if($chTopRules)
-            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
-                    <h2 class="text-sm font-semibold text-gray-800 dark:text-gray-100">Visualisasi Top Rules Berdasarkan Lift</h2>
-                    <p class="text-xs text-gray-400 mt-0.5">Rule dengan nilai lift tertinggi menunjukkan asosiasi terkuat</p>
-                </div>
-                <div class="p-4">
-                    <img src="data:image/png;base64,{{ $chTopRules }}" alt="Top Rules Chart" class="w-full rounded"/>
-                </div>
+        @if($chTopRules)
+        <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                <h2 class="text-sm font-semibold text-gray-800 dark:text-gray-100">Visualisasi Top Rules Berdasarkan Lift</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Rule dengan nilai lift tertinggi menunjukkan asosiasi terkuat</p>
             </div>
-            @endif
-            @if($chFreqItem)
-            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
-                    <h2 class="text-sm font-semibold text-gray-800 dark:text-gray-100">Visualisasi Frekuensi Kemunculan Tiap Menu</h2>
-                    <p class="text-xs text-gray-400 mt-0.5">Frekuensi kemunculan tiap menu dalam transaksi</p>
-                </div>
-                <div class="p-4">
-                    <img src="data:image/png;base64,{{ $chFreqItem }}" alt="Frequent Itemsets Chart" class="w-full rounded"/>
-                </div>
+            <div class="p-4">
+                <img src="data:image/png;base64,{{ $chTopRules }}" alt="Top Rules Chart" class="w-full rounded"/>
             </div>
-            @endif
         </div>
         @endif
 
         {{-- ══════════════════════════════════════════════════════════════════ --}}
-        {{-- FREQUENT ITEMSETS TABLES                                           --}}
+        {{-- VISUALISASI Frekuensi Kemunculan Tiap Menu                         --}}
         {{-- ══════════════════════════════════════════════════════════════════ --}}
-        @if(count($freq1) || count($freq2))
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-            {{-- ── Frequent 1-Itemsets ──────────────────────────────────── --}}
-            @if(count($freq1))
-            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
-                    <h2 class="text-sm font-semibold text-gray-800 dark:text-gray-100">Frequent 1-Itemsets</h2>
-                    <p class="text-xs text-gray-400 mt-0.5">Daftar menu yang sering muncul sendiri dalam transaksi</p>
-                </div>
-                <div class="overflow-x-auto">
-                    <table style="width:100%; border-collapse:collapse; font-size:0.76rem;">
-                        <thead>
-                            <tr style="background-color:#1e40af;">
-                                <th style="padding:8px 12px; text-align:left;  font-size:0.67rem; font-weight:600; color:#fff; text-transform:uppercase; letter-spacing:0.04em; border:1px solid #3b82f6;">Menu</th>
-                                <th style="padding:8px 12px; text-align:right; font-size:0.67rem; font-weight:600; color:#fff; text-transform:uppercase; letter-spacing:0.04em; border:1px solid #3b82f6;">Support</th>
-                                <th style="padding:8px 12px; text-align:right; font-size:0.67rem; font-weight:600; color:#fff; text-transform:uppercase; letter-spacing:0.04em; border:1px solid #3b82f6;">Jml Transaksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($freq1 as $idx => $fi)
-                            <tr style="{{ $idx % 2 === 0 ? 'background-color:#f8fafc;' : 'background-color:#ffffff;' }}">
-                                <td style="padding:7px 12px; text-align:left;  color:#1d4ed8; font-weight:500; border:1px solid #e2e8f0;">{{ $fi['item'] }}</td>
-                                <td style="padding:7px 12px; text-align:right; color:#374151; border:1px solid #e2e8f0;">{{ number_format($fi['support'] * 100, 2) }}%</td>
-                                <td style="padding:7px 12px; text-align:right; color:#374151; font-weight:600; border:1px solid #e2e8f0;">{{ number_format($fi['jumlah_kemunculan']) }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+        @if($chFreqItem)
+        <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-8 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                <h2 class="text-sm font-semibold text-gray-800 dark:text-gray-100">Visualisasi Frekuensi Kemunculan Tiap Menu</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Frekuensi kemunculan tiap menu dalam transaksi</p>
             </div>
-            @endif
-
-            {{-- ── Frequent 2-Itemsets ──────────────────────────────────── --}}
-            @if(count($freq2))
-            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
-                    <h2 class="text-sm font-semibold text-gray-800 dark:text-gray-100">Frequent 2-Itemsets (Terurut)</h2>
-                    <p class="text-xs text-gray-400 mt-0.5">Daftar 2 menu yang sering dipesan berurutan (A → B berarti A dipesan sebelum B)</p>
-                </div>
-                <div class="overflow-x-auto">
-                    <table style="width:100%; border-collapse:collapse; font-size:0.76rem;">
-                        <thead>
-                            <tr style="background-color:#1e40af;">
-                                <th style="padding:8px 12px; text-align:left;  font-size:0.67rem; font-weight:600; color:#fff; text-transform:uppercase; letter-spacing:0.04em; border:1px solid #3b82f6;">Urutan Menu (A → B)</th>
-                                <th style="padding:8px 12px; text-align:right; font-size:0.67rem; font-weight:600; color:#fff; text-transform:uppercase; letter-spacing:0.04em; border:1px solid #3b82f6;">Support</th>
-                                <th style="padding:8px 12px; text-align:right; font-size:0.67rem; font-weight:600; color:#fff; text-transform:uppercase; letter-spacing:0.04em; border:1px solid #3b82f6;">Jml Transaksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($freq2 as $idx => $fi)
-                            <tr style="{{ $idx % 2 === 0 ? 'background-color:#f8fafc;' : 'background-color:#ffffff;' }}">
-                                <td style="padding:7px 12px; text-align:left;  color:#1d4ed8; font-weight:500; border:1px solid #e2e8f0;">{{ $fi['items'] }}</td>
-                                <td style="padding:7px 12px; text-align:right; color:#374151; border:1px solid #e2e8f0;">{{ number_format($fi['support'] * 100, 2) }}%</td>
-                                <td style="padding:7px 12px; text-align:right; color:#374151; font-weight:600; border:1px solid #e2e8f0;">{{ number_format($fi['jumlah_kemunculan']) }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+            <div class="p-4">
+                <img src="data:image/png;base64,{{ $chFreqItem }}" alt="Frequent Itemsets Chart" class="w-full rounded"/>
             </div>
-            @endif
+        </div>
+        @endif
 
+        {{-- ══════════════════════════════════════════════════════════════════ --}}
+        {{-- TABEL FREQUENT 1-ITEMSETS                                          --}}
+        {{-- ══════════════════════════════════════════════════════════════════ --}}
+        @if(count($freq1))
+        <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                <h2 class="text-sm font-semibold text-gray-800 dark:text-gray-100">Frequent 1-Itemsets</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Daftar menu yang sering muncul sendiri dalam transaksi</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table style="width:100%; border-collapse:collapse; font-size:0.76rem;">
+                    <thead>
+                        <tr style="background-color:#1e40af;">
+                            <th style="padding:8px 12px; text-align:left;  font-size:0.67rem; font-weight:600; color:#fff; text-transform:uppercase; letter-spacing:0.04em; border:1px solid #3b82f6;">Menu</th>
+                            <th style="padding:8px 12px; text-align:right; font-size:0.67rem; font-weight:600; color:#fff; text-transform:uppercase; letter-spacing:0.04em; border:1px solid #3b82f6;">Support</th>
+                            <th style="padding:8px 12px; text-align:right; font-size:0.67rem; font-weight:600; color:#fff; text-transform:uppercase; letter-spacing:0.04em; border:1px solid #3b82f6;">Jml Transaksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($freq1 as $idx => $fi)
+                        <tr style="{{ $idx % 2 === 0 ? 'background-color:#f8fafc;' : 'background-color:#ffffff;' }}">
+                            <td style="padding:7px 12px; text-align:left;  color:#1d4ed8; font-weight:500; border:1px solid #e2e8f0;">{{ $fi['item'] }}</td>
+                            <td style="padding:7px 12px; text-align:right; color:#374151; border:1px solid #e2e8f0;">{{ number_format($fi['support'] * 100, 2) }}%</td>
+                            <td style="padding:7px 12px; text-align:right; color:#374151; font-weight:600; border:1px solid #e2e8f0;">{{ number_format($fi['jumlah_kemunculan']) }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @endif
+
+        {{-- ══════════════════════════════════════════════════════════════════ --}}
+        {{-- TABEL FREQUENT 2-ITEMSETS                                          --}}
+        {{-- ══════════════════════════════════════════════════════════════════ --}}
+        @if(count($freq2))
+        <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                <h2 class="text-sm font-semibold text-gray-800 dark:text-gray-100">Frequent 2-Itemsets (Terurut)</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Daftar 2 menu yang sering dipesan berurutan (A → B berarti A dipesan sebelum B)</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table style="width:100%; border-collapse:collapse; font-size:0.76rem;">
+                    <thead>
+                        <tr style="background-color:#1e40af;">
+                            <th style="padding:8px 12px; text-align:left;  font-size:0.67rem; font-weight:600; color:#fff; text-transform:uppercase; letter-spacing:0.04em; border:1px solid #3b82f6;">Urutan Menu (A → B)</th>
+                            <th style="padding:8px 12px; text-align:right; font-size:0.67rem; font-weight:600; color:#fff; text-transform:uppercase; letter-spacing:0.04em; border:1px solid #3b82f6;">Support</th>
+                            <th style="padding:8px 12px; text-align:right; font-size:0.67rem; font-weight:600; color:#fff; text-transform:uppercase; letter-spacing:0.04em; border:1px solid #3b82f6;">Jml Transaksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($freq2 as $idx => $fi)
+                        <tr style="{{ $idx % 2 === 0 ? 'background-color:#f8fafc;' : 'background-color:#ffffff;' }}">
+                            <td style="padding:7px 12px; text-align:left;  color:#1d4ed8; font-weight:500; border:1px solid #e2e8f0;">{{ $fi['items'] }}</td>
+                            <td style="padding:7px 12px; text-align:right; color:#374151; border:1px solid #e2e8f0;">{{ number_format($fi['support'] * 100, 2) }}%</td>
+                            <td style="padding:7px 12px; text-align:right; color:#374151; font-weight:600; border:1px solid #e2e8f0;">{{ number_format($fi['jumlah_kemunculan']) }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
         @endif
 

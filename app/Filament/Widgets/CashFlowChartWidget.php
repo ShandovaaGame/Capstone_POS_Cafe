@@ -32,7 +32,7 @@ class CashFlowChartWidget extends ChartWidget
 
     private function incomeQuery(): \Illuminate\Database\Eloquent\Builder
     {
-        return Order::where('is_paid', true);
+        return Order::where('status', Order::STATUS_SELESAI);
     }
 
     private function slotIncome($start, $end): float

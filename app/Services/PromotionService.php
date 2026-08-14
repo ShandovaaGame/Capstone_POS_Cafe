@@ -27,8 +27,7 @@ class PromotionService
     public function getApplicablePromotionsForMenu(Menu $menu): Collection
     {
         return $this->loadActivePromotions()
-            ->filter(fn (Promotion $promotion) =>
-                $promotion->canBeUsed() && $promotion->isApplicableTo((int) $menu->id, (int) $menu->category_id)
+            ->filter(fn (Promotion $promotion) => $promotion->canBeUsed() && $promotion->isApplicableTo((int) $menu->id, (int) $menu->category_id)
             )
             ->values();
     }

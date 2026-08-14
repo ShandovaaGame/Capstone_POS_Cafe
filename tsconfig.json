@@ -1,0 +1,50 @@
+{
+    "compilerOptions": {
+        // Target & Module
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "lib": ["ES2022", "DOM", "DOM.Iterable"],
+
+        // JSX Support (React 18 — gunakan react-jsx untuk automatic runtime)
+        "jsx": "react-jsx",
+        "jsxImportSource": "react",
+
+        // Project Settings
+        "allowJs": true,
+        "checkJs": false,
+        "isolatedModules": true,
+        "resolveJsonModule": true,
+        "allowImportingTsExtensions": false,
+        "noEmit": true,
+
+        // Strictness (longgar karena project JS murni)
+        "strict": false,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noFallthroughCasesInSwitch": true,
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true,
+
+        // Path Aliases (sesuai alias '@' di vite.config.js)
+        "paths": {
+            "@/*": ["resources/js/*"]
+        },
+
+        // Include types for Node dan Vite
+        "types": ["node", "vite/client"]
+    },
+    "include": [
+        "resources/js/**/*.js",
+        "resources/js/**/*.jsx",
+        "resources/js/**/*.ts",
+        "resources/js/**/*.tsx",
+        "vite.config.js"
+    ],
+    "exclude": [
+        "node_modules",
+        "vendor",
+        "public",
+        "storage"
+    ]
+}

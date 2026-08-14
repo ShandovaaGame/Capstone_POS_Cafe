@@ -1,5 +1,7 @@
-export const formatRupiah = (amount) =>
-    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+export const formatRupiah = (amount) => {
+    if (amount == null || isNaN(amount)) return 'Rp0';
+    return 'Rp' + Math.round(amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+};
 
 export const formatDate = (date) =>
     new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Jakarta' }).format(new Date(date));

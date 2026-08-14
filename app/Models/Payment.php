@@ -9,7 +9,6 @@ class Payment extends Model
     protected $fillable = [
         'order_id',
         'payment_method',
-        'payment_gateway',
         'transaction_id',
         'amount',
         'status',
@@ -19,7 +18,7 @@ class Payment extends Model
     protected function casts(): array
     {
         return [
-            'amount'  => 'decimal:2',
+            'amount' => 'integer',
             'paid_at' => 'datetime',
         ];
     }

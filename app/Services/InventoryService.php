@@ -8,9 +8,12 @@ use App\Models\IngredientBatch;
 use App\Models\Menu;
 use App\Models\Order;
 use App\Models\StockMovement;
-use App\Models\WasteRecord;
+use App\Models\StockAdjustment;
+use App\Models\Unit;
+use App\Services\UnitConversionService;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class InventoryService
 {
@@ -65,17 +68,19 @@ class InventoryService
 
             // Pre-load all menus in one query to avoid N+1
             $menuIds = array_unique(array_column($items, 'menu_id'));
-            $menus   = Menu::with('menuIngredients.ingredient')
+            $menus = Menu::with(['menuIngredients.ingredient'])
                 ->whereIn('id', $menuIds)
                 ->get()
                 ->keyBy('id');
 
             foreach ($items as $item) {
-                $menu     = $menus->get($item['menu_id']) ?? Menu::with('menuIngredients.ingredient')->findOrFail($item['menu_id']);
+                $menu = $menus->get($item['menu_id']) ?? Menu::with('menuIngredients.ingredient')->findOrFail($item['menu_id']);
                 $quantity = (int) ($item['quantity'] ?? 0);
 
-                if ($quantity <= 0 || $menu->menuIngredients->isEmpty()) {
-                    continue;
+                if ($quantity <= 0) {
+                    throw new \InvalidArgumentException(
+                        "Jumlah pesanan tidak valid untuk menu '{$menu->name}': quantity harus lebih dari 0"
+                    );
                 }
 
                 $itemContext = [
@@ -89,25 +94,28 @@ class InventoryService
                     'usage_date' => $item['usage_date'] ?? null,
                 ];
 
-                foreach ($menu->menuIngredients as $menuIngredient) {
-                    $ingredient = $menuIngredient->ingredient;
-                    $requiredQuantity = (float) $menuIngredient->quantity_used * $quantity;
+                if ($menu->menuIngredients->isNotEmpty()) {
+                    foreach ($menu->menuIngredients as $menuIngredient) {
+                        $ingredient = $menuIngredient->ingredient;
+                        $requiredQuantity = (float) $menuIngredient->quantity_used * $quantity;
 
-                    $deduction = $this->deductIngredientStock(
-                        ingredientId: (int) $ingredient->id,
-                        requiredQuantity: $requiredQuantity,
-                        context: array_merge($itemContext, [
-                            'notes' => "Order usage for menu {$menu->name}",
-                        ])
-                    );
+                        $deduction = $this->deductIngredientStock(
+                            ingredientId: (int) $ingredient->id,
+                            requiredQuantity: $requiredQuantity,
+                            context: array_merge($itemContext, [
+                                'notes' => "Order usage for menu {$menu->name}",
+                                'recipeUnitId' => $menuIngredient->unit_id,
+                            ])
+                        );
 
-                    $stockChanges[] = [
-                        'ingredient_id' => $ingredient->id,
-                        'ingredient_name' => $ingredient->name,
-                        'total_deducted' => $requiredQuantity,
-                        'unit' => $ingredient->unit,
-                        'batches' => $deduction['batch_changes'],
-                    ];
+                        $stockChanges[] = [
+                            'ingredient_id' => $ingredient->id,
+                            'ingredient_name' => $ingredient->name,
+                            'total_deducted' => $requiredQuantity,
+                            'unit' => $ingredient->unit,
+                            'batches' => $deduction['batch_changes'],
+                        ];
+                    }
                 }
             }
 
@@ -126,49 +134,44 @@ class InventoryService
         });
     }
 
-    public function decreaseStockForWasteRecord(WasteRecord $wasteRecord): array
-    {
-        return DB::transaction(function () use ($wasteRecord) {
-            return $this->deductIngredientStock(
-                ingredientId: (int) $wasteRecord->ingredient_id,
-                requiredQuantity: (float) $wasteRecord->quantity,
-                context: [
-                    'movement_type' => 'waste',
-                    'source_type' => 'waste_record',
-                    'source_id' => (string) $wasteRecord->id,
-                    'waste_record_id' => $wasteRecord->id,
-                    'recorded_by' => $wasteRecord->recorded_by,
-                    'reference' => 'WR-' . $wasteRecord->id,
-                    'notes' => $wasteRecord->reason,
-                ]
-            );
-        });
-    }
-
     public function canFulfillOrder(array $items): array
     {
         $insufficient = [];
 
         foreach ($items as $item) {
-            $menu = Menu::with('menuIngredients.ingredient')->findOrFail($item['menu_id']);
+            $menu = Menu::with(['menuIngredients.ingredient'])->findOrFail($item['menu_id']);
             $quantity = (int) ($item['quantity'] ?? 0);
 
-            if ($quantity <= 0 || $menu->menuIngredients->isEmpty()) {
-                continue;
+            if ($quantity <= 0) {
+                throw new \InvalidArgumentException(
+                    "Jumlah pesanan tidak valid untuk menu '{$menu->name}': quantity harus lebih dari 0"
+                );
             }
 
-            foreach ($menu->menuIngredients as $menuIngredient) {
-                $ingredient = $menuIngredient->ingredient;
-                $requiredQuantity = (float) $menuIngredient->quantity_used * $quantity;
-                $availableQuantity = $ingredient->getTotalStock();
+            if ($menu->menuIngredients->isNotEmpty()) {
+                foreach ($menu->menuIngredients as $menuIngredient) {
+                    $ingredient = $menuIngredient->ingredient;
+                    $requiredQuantity = (float) $menuIngredient->quantity_used * $quantity;
 
-                if ($availableQuantity < $requiredQuantity) {
-                    $insufficient[] = [
-                        'ingredient_name' => $ingredient->name,
-                        'required' => $requiredQuantity,
-                        'available' => $availableQuantity,
-                        'unit' => $ingredient->unit,
-                    ];
+                    // Unit conversion: if recipe unit differs from ingredient storage unit
+                    if ($menuIngredient->unit_id && $ingredient->unit_id && $menuIngredient->unit_id != $ingredient->unit_id) {
+                        $fromUnit = Unit::find($menuIngredient->unit_id);
+                        $toUnit = Unit::find($ingredient->unit_id);
+                        if ($fromUnit && $toUnit) {
+                            $requiredQuantity = app(UnitConversionService::class)->convert($requiredQuantity, $fromUnit, $toUnit);
+                        }
+                    }
+
+                    $availableQuantity = $ingredient->getTotalStock();
+
+                    if ($availableQuantity < $requiredQuantity) {
+                        $insufficient[] = [
+                            'ingredient_name' => $ingredient->name,
+                            'required' => $requiredQuantity,
+                            'available' => $availableQuantity,
+                            'unit' => $ingredient->unit,
+                        ];
+                    }
                 }
             }
         }
@@ -179,23 +182,142 @@ class InventoryService
         ];
     }
 
+    public function wasteMenu(int $menuId, float $quantity, string $wasteCategory, string $reason, ?int $recordedBy = null): array
+    {
+        $menu = Menu::with(['menuIngredients.ingredient'])->findOrFail($menuId);
+
+        if ($quantity <= 0) {
+            throw new \InvalidArgumentException('Jumlah waste harus lebih dari 0.');
+        }
+
+        // Validasi waste category
+        if (! array_key_exists($wasteCategory, StockAdjustment::DECREASE_CATEGORIES)) {
+            throw new \InvalidArgumentException('Kategori waste tidak valid.');
+        }
+
+        return DB::transaction(function () use ($menu, $quantity, $wasteCategory, $reason, $recordedBy) {
+            $context = [
+                'movement_type' => 'waste',
+                'source_type' => 'stock_adjustment',
+                'recorded_by' => $recordedBy,
+                'notes' => "[Menu: {$menu->name} ({$quantity}x)] {$reason}",
+            ];
+
+            // Branch: Recipe menu → ingredient deduction
+            if ($menu->hasRecipe()) {
+                return $this->wasteRecipeMenu($menu, $quantity, $wasteCategory, $reason, $context);
+            }
+
+            throw new \RuntimeException(
+                "Menu '{$menu->name}' tidak memiliki resep bahan baku."
+            );
+        });
+    }
+
+    private function wasteRecipeMenu(Menu $menu, float $quantity, string $wasteCategory, string $reason, array $context): array
+    {
+        // Cek stok mencukupi sebelum deduction
+        $stockCheck = $this->canFulfillOrder([['menu_id' => $menu->id, 'quantity' => $quantity]]);
+        if (! $stockCheck['can_fulfill']) {
+            $insufficient = collect($stockCheck['insufficient_ingredients'])
+                ->map(fn ($i) => "{$i['ingredient_name']}: butuh {$i['required']} {$i['unit']}, tersedia {$i['available']} {$i['unit']}")
+                ->implode('; ');
+            throw new \RuntimeException("Stok tidak mencukupi untuk '{$menu->name}': {$insufficient}");
+        }
+
+        // Hanya 1 StockAdjustment untuk mencatat event waste
+        $adjustment = StockAdjustment::create([
+            'adjustable_type' => StockAdjustment::ADJUSTABLE_TYPE_INGREDIENT,
+            'ingredient_id' => $menu->menuIngredients->first()?->ingredient_id,
+            'adjustment_type' => StockAdjustment::TYPE_DECREASE,
+            'category' => $wasteCategory,
+            'quantity' => -$quantity,
+            'quantity_before' => 0,
+            'quantity_after' => 0,
+            'reason' => $reason,
+            'reported_by' => $context['recorded_by'] ?? null,
+            'adjusted_at' => now(),
+        ]);
+
+        $ingredientCount = 0;
+        foreach ($menu->menuIngredients as $menuIngredient) {
+            $ingredient = $menuIngredient->ingredient;
+            $requiredQty = (float) $menuIngredient->quantity_used * $quantity;
+
+            $deductionContext = array_merge($context, [
+                'stock_adjustment_id' => $adjustment->id,
+                'source_id' => (string) $adjustment->id,
+                'recipeUnitId' => $menuIngredient->unit_id,
+            ]);
+
+            $this->deductIngredientStock(
+                ingredientId: (int) $ingredient->id,
+                requiredQuantity: $requiredQty,
+                context: $deductionContext,
+            );
+            $ingredientCount++;
+        }
+
+        return [
+            'success' => true,
+            'message' => "Waste untuk menu '{$menu->name}' ({$quantity}x) berhasil dicatat.",
+            'adjustments' => [$adjustment],
+            'total_ingredients_deducted' => $ingredientCount,
+        ];
+    }
+
     private function deductIngredientStock(int $ingredientId, float $requiredQuantity, array $context = []): array
     {
         $ingredient = Ingredient::findOrFail($ingredientId);
 
-        $batches = IngredientBatch::where('ingredient_id', $ingredientId)
+        // Unit conversion: if recipe unit differs from ingredient storage unit
+        if (isset($context['recipeUnitId'])) {
+            if ($ingredient->unit_id && $context['recipeUnitId'] != $ingredient->unit_id) {
+                $fromUnit = Unit::find($context['recipeUnitId']);
+                $toUnit = Unit::find($ingredient->unit_id);
+                if ($fromUnit && $toUnit) {
+                    $converted = app(UnitConversionService::class)->convert($requiredQuantity, $fromUnit, $toUnit);
+                    Log::info("Unit conversion: {$requiredQuantity} {$fromUnit->name} → {$converted} {$toUnit->name} for ingredient {$ingredient->name}");
+                    $requiredQuantity = $converted;
+                }
+            }
+        }
+
+        $query = IngredientBatch::where('ingredient_id', $ingredientId)
             ->where('quantity', '>', 0)
-            ->orderByRaw('CASE WHEN expiry_date IS NULL THEN 1 ELSE 0 END')
-            ->orderBy('expiry_date', 'asc')
-            ->orderBy('received_at', 'asc')
-            ->get();
+            ->where(function ($q) {
+                $q->whereNull('expiry_date')
+                  ->orWhereDate('expiry_date', '>', now())
+                  ->orWhere('allow_expired_usage', true);
+            })
+            ->lockForUpdate();
+
+        match ($ingredient->batch_mode) {
+            Ingredient::BATCH_MODE_FIFO => $query
+                ->orderByRaw('CASE WHEN received_at IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('received_at', 'asc')
+                ->orderBy('expiry_date', 'asc')
+                ->orderBy('id', 'asc'),
+            Ingredient::BATCH_MODE_CUSTOM => $query
+                ->orderByRaw('CASE WHEN custom_order IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('custom_order', 'asc')
+                ->orderBy('received_at', 'asc')
+                ->orderBy('id', 'asc'),
+            default => $query  // FEFO (default & null fallback)
+                ->orderByRaw('CASE WHEN expiry_date IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('expiry_date', 'asc')
+                ->orderBy('received_at', 'asc')
+                ->orderBy('id', 'asc'),
+        };
+
+        $batches = $query->get();
 
         $totalAvailable = (float) $batches->sum('quantity');
 
         if ($totalAvailable < $requiredQuantity) {
             throw new Exception(
-                "Stok tidak mencukupi untuk bahan '{$ingredient->name}'. " .
-                "Dibutuhkan: {$requiredQuantity} {$ingredient->unit}, " .
+                "Stok tidak mencukupi untuk bahan '{$ingredient->name}'. ".
+                "Dibutuhkan: {$requiredQuantity} {$ingredient->unit}, ".
                 "Tersedia: {$totalAvailable} {$ingredient->unit}"
             );
         }
@@ -222,7 +344,6 @@ class InventoryService
                 'ingredient_batch_id' => $batch->id,
                 'order_id' => $context['order_id'] ?? null,
                 'order_item_id' => $context['order_item_id'] ?? null,
-                'waste_record_id' => $context['waste_record_id'] ?? null,
                 'stock_adjustment_id' => $context['stock_adjustment_id'] ?? null,
                 'movement_type' => $context['movement_type'] ?? 'sale',
                 'source_type' => $context['source_type'] ?? null,

@@ -6,8 +6,8 @@ use Carbon\Carbon;
 use Filament\Pages\Page;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 class KlasterisasiMenu extends Page
 {
@@ -24,6 +24,15 @@ class KlasterisasiMenu extends Page
     // ── Input pengguna ─────────────────────────────────────────────────────
     public string $inputDateFrom = '';
     public string $inputDateTo   = '';
+
+    // ── Batas kategorisasi penjualan (user-defined) ────────────────────────
+    // Sangat Laris : total > sangat_laris_batas
+    // Laris        : laris_batas_bawah ≤ total ≤ sangat_laris_batas
+    // Cukup        : cukup_batas_bawah ≤ total ≤ (laris_batas_bawah - 1)
+    // Kurang Laris : total < cukup_batas_bawah
+    public int $sangat_laris_batas = 399;
+    public int $laris_batas_bawah  = 350;
+    public int $cukup_batas_bawah  = 200;
 
     // ── State ──────────────────────────────────────────────────────────────
     public bool    $isRunning = false;
@@ -79,14 +88,42 @@ class KlasterisasiMenu extends Page
         }
     }
 
+    // ── Validasi batas kategorisasi ────────────────────────────────────────
+    public function isCategoryValid(): bool
+    {
+        return $this->sangat_laris_batas > $this->laris_batas_bawah
+            && $this->laris_batas_bawah > $this->cukup_batas_bawah
+            && $this->cukup_batas_bawah > 0;
+    }
+
+    // ── Tentukan kategori berdasarkan total jumlah penjualan ───────────────
+    private function assignKategori(float $totalJumlah): string
+    {
+        $total = (int) floor($totalJumlah);
+        if ($total > $this->sangat_laris_batas) return 'Sangat Laris';
+        if ($total >= $this->laris_batas_bawah)  return 'Laris';
+        if ($total >= $this->cukup_batas_bawah)  return 'Cukup';
+        return 'Kurang Laris';
+    }
+
     // ── Panggil FastAPI dan simpan hasil ───────────────────────────────────
     public function runClustering(): void
     {
-        // Validasi tanggal sebelum memanggil FastAPI
+        // Validasi tanggal
         if (! $this->isDatesValid()) {
             Notification::make()
                 ->title('Rentang tanggal belum valid')
                 ->body('Isi "Dari Tanggal" dan "Sampai Tanggal" dengan rentang minimal 3 bulan.')
+                ->warning()
+                ->send();
+            return;
+        }
+
+        // Validasi batas kategorisasi
+        if (! $this->isCategoryValid()) {
+            Notification::make()
+                ->title('Batas kategorisasi tidak valid')
+                ->body('Pastikan: Batas Sangat Laris > Batas Bawah Laris > Batas Bawah Cukup > 0.')
                 ->warning()
                 ->send();
             return;
@@ -117,10 +154,17 @@ class KlasterisasiMenu extends Page
             $this->totalMenu       = $data['total_menu']       ?? 0;
             $this->dateFrom        = $data['date_range']['from'] ?? $this->inputDateFrom;
             $this->dateTo          = $data['date_range']['to']   ?? $this->inputDateTo;
-            $this->preprocessLogs  = $data['preprocessing_logs'] ?? [];
-            $this->tableRows       = $data['table_rows']          ?? [];
-            $this->kategoriRows    = $data['kategorisasi_rows']   ?? [];
-            $this->clusterSummary  = $data['cluster_summary']     ?? [];
+            $this->preprocessLogs = $data['preprocessing_logs'] ?? [];
+            $this->tableRows      = $data['table_rows']          ?? [];
+            $this->clusterSummary = $data['cluster_summary']     ?? [];
+
+            // Kategorisasi dihitung di PHP berdasarkan batas yang ditetapkan user
+            $this->kategoriRows = array_map(
+                fn ($row) => array_merge($row, [
+                    'Kategori' => $this->assignKategori((float) ($row['Total_Jumlah'] ?? 0)),
+                ]),
+                $this->tableRows
+            );
             $this->chartBarJumlah     = $data['charts']['bar_jumlah']     ?? null;
             $this->chartBarKeuntungan = $data['charts']['bar_keuntungan'] ?? null;
             $this->chartKategorisasi  = $data['charts']['kategorisasi']   ?? null;
@@ -132,7 +176,7 @@ class KlasterisasiMenu extends Page
             $this->usedDateFrom = $this->inputDateFrom;
             $this->usedDateTo   = $this->inputDateTo;
 
-            // ── Simpan ke cache (list 3 hasil terbaru, unik per rentang tanggal) ──
+            // ── Simpan ke cache (unik per rentang tanggal, tanpa batas jumlah) ─
             $newResult = array_merge($data, [
                 'last_run_at'      => $this->lastRunAt,
                 'input_date_from'  => $this->inputDateFrom,
@@ -155,7 +199,6 @@ class KlasterisasiMenu extends Page
 
             if (! $replaced) {
                 array_unshift($results, $newResult);
-                $results = array_slice($results, 0, 3);
             }
 
             Cache::put('klasterisasi_menu_results', $results, now()->addDays(30));

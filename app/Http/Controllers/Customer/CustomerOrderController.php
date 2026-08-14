@@ -11,6 +11,7 @@ use App\Models\CafeTable;
 use App\Services\OrderPromotionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -36,7 +37,10 @@ class CustomerOrderController extends Controller
         ]);
 
         return DB::transaction(function () use ($request, $orderPromotionService) {
-            CafeTable::findOrFail($request->table_id);
+            // Cache table lookup — meja jarang berubah, aman di-cache 10 menit
+            Cache::remember("cafe_table_{$request->table_id}", 600, fn() =>
+                CafeTable::findOrFail($request->table_id)
+            );
 
             $isMahasiswa = (bool) $request->input('is_mahasiswa', false);
             $selectedPromotionIds = $request->input('promotion_ids', []);
@@ -55,9 +59,20 @@ class CustomerOrderController extends Controller
             $appliedPromotions = [];
             $orderItemsToInsert = [];
 
-            // Bulk-fetch semua menu sekaligus — hindari N+1 query
+            // Bulk-fetch menu dengan cache per menu_id — menghindari query berulang
             $menuIds = collect($request->items)->pluck('menu_id')->unique()->all();
-            $menus   = Menu::whereIn('id', $menuIds)->get()->keyBy('id');
+            $menus   = collect(Cache::many(array_map(fn($id) => "menu_{$id}", $menuIds)))
+                ->filter()
+                ->mapWithKeys(fn($m, $k) => [str_replace('menu_', '', $k) => $m]);
+
+            $missingIds = collect($menuIds)->filter(fn($id) => !$menus->has($id))->values()->all();
+            if (!empty($missingIds)) {
+                $fresh = Menu::whereIn('id', $missingIds)->get()->keyBy('id');
+                foreach ($fresh as $id => $menu) {
+                    Cache::put("menu_{$id}", $menu, 300);
+                }
+                $menus = $menus->union($fresh);
+            }
 
             foreach ($request->items as $item) {
                 $menu = $menus->get($item['menu_id']);
@@ -105,7 +120,7 @@ class CustomerOrderController extends Controller
                 'total_amount' => $order->total_amount,
                 'order_id'     => $order->id,
             ], 201);
-        });
+        }, 3);
     }
 
     public function riwayat(Request $request)
@@ -115,21 +130,16 @@ class CustomerOrderController extends Controller
 
         $orders = $phone
             ? Order::with([
-                'items' => fn($q) => $q->select(['id', 'order_id', 'menu_id', 'quantity', 'subtotal']),
+                'items'      => fn($q) => $q->select(['id', 'order_id', 'menu_id', 'quantity', 'subtotal']),
                 'items.menu' => fn($q) => $q->select(['id', 'name']),
             ])
                 ->select(['id', 'order_code', 'status', 'total_amount', 'created_at', 'payment_method', 'customer_name', 'customer_phone', 'payment_proof'])
                 ->where('customer_phone', $phone)
-                ->where(function ($q) {
-                    $q->where('payment_method', 'cash')
-                      ->orWhere(function ($q2) {
-                          $q2->where('payment_method', 'qris')
-                             ->where(function ($q3) {
-                                 // Tampil saat bukti dikirim (pending) ATAU sudah dikonfirmasi kasir (proof dihapus)
-                                 $q3->whereNotNull('payment_proof')
-                                    ->orWhereIn('status', [Order::STATUS_DIPROSES, Order::STATUS_SELESAI]);
-                             });
-                      });
+                ->whereNot(function ($q) {
+                    // Sembunyikan QRIS yang belum ada bukti & belum dikonfirmasi kasir
+                    $q->where('payment_method', 'qris')
+                      ->whereNull('payment_proof')
+                      ->whereNotIn('status', [Order::STATUS_DIPROSES, Order::STATUS_SELESAI]);
                 })
                 ->latest()
                 ->limit(50)
@@ -153,7 +163,7 @@ class CustomerOrderController extends Controller
                 ])
             : collect();
 
-        return Inertia::render('Customer/Riwayat/Index', compact('orders'));
+        return Inertia::render('Pelanggan/Riwayat/Index', compact('orders'));
     }
 
     public function status(string $code)
@@ -162,7 +172,7 @@ class CustomerOrderController extends Controller
             ->where('order_code', $code)
             ->firstOrFail();
 
-        return Inertia::render('Customer/Order/Status', [
+        return Inertia::render('Pelanggan/Order/Status', [
             'order' => [
                 'id'             => $order->id,
                 'order_code'     => $order->order_code,

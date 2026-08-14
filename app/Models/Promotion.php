@@ -10,13 +10,19 @@ class Promotion extends Model
     use SoftDeletes;
 
     public const TYPE_PERCENTAGE = 'percentage';
+
     public const TYPE_FIXED_AMOUNT = 'fixed_amount';
+
     public const TYPE_BUY_X_GET_Y = 'buy_x_get_y';
+
     public const TYPE_BUNDLE = 'bundle';
 
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_INACTIVE = 'inactive';
+
     public const STATUS_SCHEDULED = 'scheduled';
+
     public const STATUS_EXPIRED = 'expired';
 
     protected $fillable = [

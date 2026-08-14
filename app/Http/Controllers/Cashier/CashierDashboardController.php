@@ -12,7 +12,8 @@ class CashierDashboardController extends Controller
     {
         $today = today();
 
-        // Single aggregation query replaces 4 separate COUNT/SUM queries
+        // Tanpa cache — dashboard dimuat ulang fresh tiap dibuka (reload-on-mount),
+        // query difilter "hari ini" + index created_at sehingga tetap ringan.
         $stats = Order::whereDate('created_at', $today)
             ->selectRaw("
                 SUM(CASE WHEN status = ? THEN total_amount ELSE 0 END) AS total_penjualan,
@@ -27,8 +28,7 @@ class CashierDashboardController extends Controller
             ])
             ->first();
 
-        // Active orders — separate because condition spans all dates
-        $pesananAktif = Order::where('status', '!=', Order::STATUS_SELESAI)
+        $pesananAktif = Order::whereNotIn('status', [Order::STATUS_SELESAI, Order::STATUS_DIBATALKAN])
             ->where(fn($q) =>
                 $q->where('order_type', 'cashier')
                   ->orWhere(fn($q2) =>
@@ -40,10 +40,10 @@ class CashierDashboardController extends Controller
                   )
             )->count();
 
-        // Last 5 orders — only select columns actually needed
         $transaksiTerbaru = Order::with(['items' => fn($q) => $q->select('id', 'order_id', 'menu_id', 'quantity')->with(['menu' => fn($q) => $q->select('id', 'name')])])
             ->select('id', 'order_code', 'customer_name', 'total_amount', 'payment_method', 'status', 'created_at')
-            ->whereDate('created_at', $today)
+            ->whereDate('created_at', today())
+            ->whereNotNull('payment_method')
             ->latest()
             ->take(5)
             ->get()
@@ -57,7 +57,7 @@ class CashierDashboardController extends Controller
                 'status'         => $o->status,
             ]);
 
-        return Inertia::render('Cashier/Dashboard', [
+        return Inertia::render('Kasir/Dashboard', [
             'totalPenjualan'   => (float) ($stats->total_penjualan ?? 0),
             'jumlahTransaksi'  => (int)   ($stats->jumlah_transaksi ?? 0),
             'pesananAktif'     => $pesananAktif,

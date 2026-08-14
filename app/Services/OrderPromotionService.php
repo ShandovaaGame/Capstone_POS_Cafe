@@ -81,7 +81,7 @@ class OrderPromotionService
                 continue;
             }
 
-            if (!isset($aggregatedPromotions[$promotionId])) {
+            if (! isset($aggregatedPromotions[$promotionId])) {
                 $aggregatedPromotions[$promotionId] = [
                     'promotion_id' => $promotionId,
                     'discount_type' => $appliedPromotion['discount_type'],

@@ -48,24 +48,14 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Order::class, 'cashier_id');
     }
 
-    public function cashierSessions()
+    public function processedOrders()
     {
-        return $this->hasMany(CashierSession::class);
+        return $this->hasMany(Order::class, 'processed_by');
     }
 
-    public function wasteRecords()
+    public function reportedStockAdjustments()
     {
-        return $this->hasMany(WasteRecord::class, 'recorded_by');
-    }
-
-    public function recordedStockAdjustments()
-    {
-        return $this->hasMany(StockAdjustment::class, 'recorded_by');
-    }
-
-    public function approvedStockAdjustments()
-    {
-        return $this->hasMany(StockAdjustment::class, 'approved_by');
+        return $this->hasMany(StockAdjustment::class, 'reported_by');
     }
 
     public function stockMovements()

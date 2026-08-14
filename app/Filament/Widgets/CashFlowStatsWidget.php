@@ -52,7 +52,7 @@ class CashFlowStatsWidget extends StatsOverviewWidget
 
     private function totalIncome($s, $e): float
     {
-        $fromOrders = (float) Order::where('is_paid', true)
+        $fromOrders = (float) Order::where('status', Order::STATUS_SELESAI)
             ->whereBetween('created_at', [$s, $e])->sum('total_amount');
         $fromUnexpected = (float) UnexpectedTransaction::where('jenis', 'pemasukan')
             ->whereBetween('created_at', [$s, $e])->sum('nominal');
@@ -107,7 +107,7 @@ class CashFlowStatsWidget extends StatsOverviewWidget
         $net     = $income - $expense;
         $margin  = $income > 0 ? ($net / $income) * 100 : 0;
 
-        $txnCnt = Order::where('is_paid', true)->whereBetween('created_at', [$s, $e])->count()
+        $txnCnt = Order::where('status', Order::STATUS_SELESAI)->whereBetween('created_at', [$s, $e])->count()
                 + IngredientBatch::whereBetween('received_at', [$s, $e])->count()
                 + UnexpectedTransaction::whereBetween('created_at', [$s, $e])->count();
 

@@ -2,17 +2,17 @@
 
 namespace App\Filament\Resources\StockAdjustmentResource\RelationManagers;
 
+use App\Models\StockMovement;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
 use Filament\Tables\Table;
 
 class MovementsRelationManager extends RelationManager
 {
     protected static string $relationship = 'stockMovements';
 
-    protected static ?string $title = 'Stock Movements';
+    protected static ?string $title = 'Detail Bahan Baku';
 
     public function form(Schema $schema): Schema
     {
@@ -22,37 +22,40 @@ class MovementsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with(['ingredientBatch', 'recordedBy']))
+            ->modifyQueryUsing(fn ($query) => $query->with(['ingredient', 'ingredientBatch']))
             ->columns([
-                TextColumn::make('id')
-                    ->label('ID')
+                TextColumn::make('ingredient.name')
+                    ->label('Bahan Baku')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('movement_type')
-                    ->label('Movement')
-                    ->badge()
+                TextColumn::make('ingredient.unit')
+                    ->label('Unit')
+                    ->sortable(),
+                TextColumn::make('quantity_change')
+                    ->label('Perubahan')
+                    ->formatStateUsing(fn ($state, StockMovement $record) =>
+                        ($state >= 0 ? '+ ' : '- ')
+                        . number_format(abs((float) $state), 0, ',', '.')
+                        . ' ' . ($record->ingredient?->unit ?? '')
+                    )
+                    ->sortable(),
+                TextColumn::make('quantity_before')
+                    ->label('Sebelum')
+                    ->formatStateUsing(fn ($state, StockMovement $record) =>
+                        number_format((float) $state, 0, ',', '.')
+                        . ' ' . ($record->ingredient?->unit ?? '')
+                    )
+                    ->sortable(),
+                TextColumn::make('quantity_after')
+                    ->label('Sesudah')
+                    ->formatStateUsing(fn ($state, StockMovement $record) =>
+                        number_format((float) $state, 0, ',', '.')
+                        . ' ' . ($record->ingredient?->unit ?? '')
+                    )
                     ->sortable(),
                 TextColumn::make('ingredient_batch_id')
                     ->label('Batch')
                     ->default('-')
-                    ->sortable(),
-                TextColumn::make('quantity_before')
-                    ->label('Before')
-                    ->numeric(decimalPlaces: 2)
-                    ->sortable(),
-                TextColumn::make('quantity_change')
-                    ->label('Change')
-                    ->numeric(decimalPlaces: 2)
-                    ->sortable(),
-                TextColumn::make('quantity_after')
-                    ->label('After')
-                    ->numeric(decimalPlaces: 2)
-                    ->sortable(),
-                TextColumn::make('recordedBy.name')
-                    ->label('Recorded By')
-                    ->default('-'),
-                TextColumn::make('created_at')
-                    ->label('Created At')
-                    ->dateTime()
                     ->sortable(),
             ])
             ->headerActions([])

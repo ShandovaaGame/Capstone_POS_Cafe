@@ -162,8 +162,6 @@ class PrediksiBahanBaku extends Page
                 'chart_feature_importance' => $this->chartFeatureImportance,
             ]);
 
-            // Simpan maksimal 3 entry
-            $history = array_slice($history, 0, 3);
             Cache::put('prediksi_bahan_baku_results_history', $history, now()->addDays(30));
 
             Notification::make()

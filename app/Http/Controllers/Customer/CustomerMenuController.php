@@ -11,42 +11,50 @@ use Inertia\Inertia;
 
 class CustomerMenuController extends Controller
 {
+    private function findTable(?string $tableId): ?CafeTable
+    {
+        if (!$tableId) return null;
+
+        return Cache::remember("cafe_table_{$tableId}", 600, fn () =>
+            CafeTable::select(['id', 'table_number', 'is_available'])->find($tableId)
+        );
+    }
+
     public function showIdentitas(Request $request)
     {
-        $tableId = $request->query('table');
-        $table   = $tableId
-            ? CafeTable::select(['id', 'table_number'])->find($tableId)
-            : null;
+        $table = $this->findTable($request->query('table'));
 
-        if ($table && $table->table_number > 10) {
-            abort(404);
+        // Tolak jika meja tidak ada di DB atau ditandai tidak tersedia
+        if ($tableId = $request->query('table')) {
+            if (! $table || ! $table->is_available) {
+                abort(404);
+            }
         }
 
-        return Inertia::render('Customer/Identitas', ['table' => $table]);
+        return Inertia::render('Pelanggan/Identitas', ['table' => $table]);
     }
 
     public function index(Request $request)
     {
-        $categories = Cache::remember('customer_menu_v1', 300, function () {
+        $categories = Cache::remember('customer_menu_v3', 300, function () {
             return Category::with([
-                'menus' => fn($q) => $q
-                    ->where('is_available', true)
-                    ->select(['id', 'category_id', 'name', 'price', 'cashback', 'image'])
+                'menus' => fn ($q) => $q
+                    ->select(['id', 'category_id', 'name', 'price', 'student_price', 'image', 'is_available'])
                     ->orderBy('name'),
-            ])->where('is_active', true)
-              ->select(['id', 'name', 'slug'])
-              ->orderBy('name')
-              ->get();
+            ])
+                ->select(['id', 'name'])
+                ->orderBy('name')
+                ->get();
         });
 
-        $table = $request->query('table')
-            ? CafeTable::select(['id', 'table_number'])->find($request->query('table'))
-            : null;
+        $table = $this->findTable($request->query('table'));
 
-        if ($table && $table->table_number > 10) {
-            abort(404);
+        if ($tableId = $request->query('table')) {
+            if (! $table || ! $table->is_available) {
+                abort(404);
+            }
         }
 
-        return Inertia::render('Customer/Menu/Index', compact('categories', 'table'));
+        return Inertia::render('Pelanggan/Menu/Index', compact('categories', 'table'));
     }
 }

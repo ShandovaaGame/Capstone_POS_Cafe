@@ -2,34 +2,37 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class CashierSession extends Model
 {
-    use HasFactory, HasUuids;
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
+    protected $table = 'staff_sessions';
 
     protected $fillable = [
         'user_id',
-        'shift_start',
-        'shift_end',
-        'total_sales',
-        'total_transactions',
+        'type',
+        'session_id',
+        'started_at',
+        'ended_at',
+        'last_activity_at',
+        'is_active',
     ];
 
     protected function casts(): array
     {
         return [
-            'shift_start' => 'datetime',
-            'shift_end' => 'datetime',
-            'total_sales' => 'decimal:2',
-            'total_transactions' => 'integer',
+            'started_at'       => 'datetime',
+            'ended_at'         => 'datetime',
+            'last_activity_at' => 'datetime',
+            'is_active'        => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('cashier', fn (Builder $q) => $q->where('type', 'cashier'));
+        static::creating(fn ($m) => $m->type = 'cashier');
     }
 
     public function user()
@@ -39,25 +42,25 @@ class CashierSession extends Model
 
     public function isActive(): bool
     {
-        return $this->shift_end === null;
+        return $this->is_active;
     }
 
     public function getDurationAttribute(): ?float
     {
-        if ($this->shift_end === null || $this->shift_start === null) {
+        if (! $this->started_at || ! $this->ended_at) {
             return null;
         }
 
-        return round($this->shift_start->diffInMinutes($this->shift_end) / 60, 2);
+        return round($this->started_at->diffInMinutes($this->ended_at) / 60, 2);
     }
 
-    public function scopeActive($query)
+    public function scopeActive(Builder $query): Builder
     {
-        return $query->whereNull('shift_end');
+        return $query->where('is_active', true);
     }
 
-    public function scopeToday($query)
+    public function scopeToday(Builder $query): Builder
     {
-        return $query->whereDate('shift_start', today());
+        return $query->whereDate('started_at', today());
     }
 }

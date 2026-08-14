@@ -8,6 +8,7 @@ const statusMap = {
     menunggu:  { dot: '#D4A64A', text: '#D4A64A', bg: '#FFF8E1', label: 'Menunggu'  },
     disetujui: { dot: '#4D9B6A', text: '#4D9B6A', bg: '#E8F5E9', label: 'Disetujui' },
     ditolak:   { dot: '#C95D4A', text: '#C95D4A', bg: '#FBE9E7', label: 'Ditolak'   },
+    dibatalkan: { dot: '#DC3545', text: '#DC3545', bg: '#FBE9E7', label: 'Dibatalkan' },
 };
 
 export default function StatusBadge({ status }) {

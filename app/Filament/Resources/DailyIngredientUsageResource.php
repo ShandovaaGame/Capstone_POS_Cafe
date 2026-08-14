@@ -20,7 +20,7 @@ class DailyIngredientUsageResource extends Resource
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chart-bar-square';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Inventory';
+    protected static string | \UnitEnum | null $navigationGroup = 'Inventori';
 
     protected static ?string $navigationLabel = 'Pemakaian Bahan Harian';
 

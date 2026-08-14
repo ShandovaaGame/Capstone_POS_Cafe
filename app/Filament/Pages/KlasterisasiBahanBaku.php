@@ -184,7 +184,6 @@ class KlasterisasiBahanBaku extends Page
                 ],
             ]);
 
-            $history = array_slice($history, 0, 3);
             Cache::put('klasterisasi_bahan_baku_results_history', $history, now()->addDays(30));
 
             Notification::make()

@@ -1,63 +1,68 @@
 <x-filament-panels::page>
 
 {{-- ════════════════════════════════════════════════════════════════════ --}}
-{{-- FORM INPUT RENTANG TANGGAL DATA PENJUALAN                           --}}
+{{-- INPUT RENTANG TANGGAL DATA PENJUALAN                                 --}}
 {{-- ════════════════════════════════════════════════════════════════════ --}}
-<div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/40">
-        <h2 class="text-base font-bold text-gray-900 dark:text-white">Rentang Tanggal Data Penjualan</h2>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            Pilih rentang tanggal data transaksi yang akan digunakan sebagai dasar prediksi (minimal 3 bulan).
-        </p>
+<div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 shadow-sm overflow-hidden">
+
+    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Rentang Tanggal Data Penjualan</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Pilih periode data transaksi yang akan digunakan sebagai dasar prediksi (minimal 3 bulan)</p>
     </div>
+
     <div class="px-6 py-5">
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2" style="max-width:560px;">
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5">
-                    Tanggal Awal
-                </label>
-                <input
-                    type="date"
-                    wire:model.live="inputDateFrom"
-                    class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-800 dark:text-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                />
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5">
-                    Tanggal Akhir
-                </label>
-                <input
-                    type="date"
-                    wire:model.live="inputDateTo"
-                    class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-800 dark:text-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                />
+        <div style="border: 2px solid #3b82f6; border-radius: 10px; padding: 16px 20px; background: rgba(59,130,246,0.04);">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
+
+                <div class="flex-1">
+                    <label style="display:block; font-size:0.72rem; font-weight:700; color:#3b82f6; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">
+                        Dari Tanggal
+                    </label>
+                    <input type="date"
+                           wire:model.live="inputDateFrom"
+                           class="block w-full rounded-lg border border-gray-300 dark:border-gray-600
+                                  bg-white dark:bg-gray-900 text-gray-900 dark:text-white
+                                  px-4 py-2.5 text-sm shadow-sm
+                                  focus:border-primary-500 focus:ring-1 focus:ring-primary-500
+                                  transition" />
+                </div>
+
+                <div class="hidden sm:flex items-center justify-center pb-0.5">
+                    <span style="color:#3b82f6; font-size:0.875rem; font-weight:700;">s/d</span>
+                </div>
+
+                <div class="flex-1">
+                    <label style="display:block; font-size:0.72rem; font-weight:700; color:#3b82f6; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">
+                        Sampai Tanggal
+                    </label>
+                    <input type="date"
+                           wire:model.live="inputDateTo"
+                           class="block w-full rounded-lg border border-gray-300 dark:border-gray-600
+                                  bg-white dark:bg-gray-900 text-gray-900 dark:text-white
+                                  px-4 py-2.5 text-sm shadow-sm
+                                  focus:border-primary-500 focus:ring-1 focus:ring-primary-500
+                                  transition" />
+                </div>
+
             </div>
         </div>
 
-        {{-- Petunjuk & validasi --}}
         <div class="mt-4">
             @if(! $inputDateFrom || ! $inputDateTo)
-                <div class="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 px-4 py-3">
-                    <p class="text-xs text-blue-700 dark:text-blue-300">
-                        Isi rentang tanggal data riwayat penjualan (transaksi) yang akan digunakan untuk diolah pada
-                        data mining prediksi menu penjualan, kemudian tekan tombol
-                        <span class="font-semibold">"Jalankan Prediksi"</span> di kanan atas.
+                <div class="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-4 py-3">
+                    <p class="text-xs text-amber-700 dark:text-amber-300">
+                        Pilih <strong>Dari Tanggal</strong> dan <strong>Sampai Tanggal</strong> dengan rentang minimal <strong>3 bulan</strong>, lalu tekan <strong>"Jalankan Prediksi"</strong> di kanan atas.
                     </p>
                 </div>
-
             @elseif($dateRangeError)
-                <div class="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3">
+                <div class="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3">
                     <p class="text-xs text-red-700 dark:text-red-300 font-medium">{{ $dateRangeError }}</p>
                 </div>
-
             @else
-                <div class="rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 px-4 py-3">
-                    <p class="text-xs text-green-700 dark:text-green-300">
-                        Rentang tanggal valid:
-                        <span class="font-semibold">{{ \Carbon\Carbon::parse($inputDateFrom)->translatedFormat('d M Y') }}</span>
-                        s/d
-                        <span class="font-semibold">{{ \Carbon\Carbon::parse($inputDateTo)->translatedFormat('d M Y') }}</span>.
-                        Tombol <span class="font-semibold">"Jalankan Prediksi"</span> siap digunakan.
+                <div class="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-4 py-3">
+                    <p class="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                        Rentang tanggal valid: <strong>{{ \Carbon\Carbon::parse($inputDateFrom)->translatedFormat('d M Y') }}</strong> s/d <strong>{{ \Carbon\Carbon::parse($inputDateTo)->translatedFormat('d M Y') }}</strong>.
+                        Tekan <strong>"Jalankan Prediksi"</strong> di kanan atas.
                     </p>
                 </div>
             @endif
@@ -118,33 +123,6 @@
             </span>
         </div>
     </div>
-
-    {{-- ══════════════════════════════════════════════════════════════ --}}
-    {{-- PROSES 1 — LOG PREPROCESSING                                   --}}
-    {{-- ══════════════════════════════════════════════════════════════ --}}
-    @if(count($preprocessLogs))
-    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 class="text-base font-bold text-gray-900 dark:text-white">Proses 1 — Informasi Data &amp; Preprocessing</h2>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Tahapan pemrosesan data sebelum model dilatih</p>
-        </div>
-        <div class="px-6 py-4">
-            <ol class="space-y-3">
-                @foreach($preprocessLogs as $i => $log)
-                <li class="flex gap-3">
-                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 text-xs font-bold flex items-center justify-center mt-0.5">
-                        {{ $i + 1 }}
-                    </span>
-                    <div>
-                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $log['tahap'] ?? '' }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $log['detail'] ?? '' }}</p>
-                    </div>
-                </li>
-                @endforeach
-            </ol>
-        </div>
-    </div>
-    @endif
 
     {{-- ══════════════════════════════════════════════════════════════ --}}
     {{-- PROSES 2 — EVALUASI MODEL (MAE saja)                           --}}
@@ -215,81 +193,87 @@
     @endif
 
     {{-- ══════════════════════════════════════════════════════════════ --}}
-    {{-- OUTPUT 2 — PREDIKSI PENJUALAN 2 HARI KE DEPAN (tabel per menu) --}}
+    {{-- OUTPUT 2 — PREDIKSI PENJUALAN 2 HARI KE DEPAN (per menu)      --}}
     {{-- ══════════════════════════════════════════════════════════════ --}}
     @if(count($predictions))
-    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+
+    {{-- Header Output 2 --}}
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-4 overflow-hidden">
+        <div class="px-6 py-4">
             <h2 class="text-base font-bold text-gray-900 dark:text-white">Output 2 — Prediksi Penjualan 2 Hari ke Depan</h2>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Periode prediksi:
                 <span class="font-medium text-primary-600 dark:text-primary-400">{{ $dateForecastFrom }}</span>
                 s/d
                 <span class="font-medium text-primary-600 dark:text-primary-400">{{ $dateForecastTo }}</span>
+                — satu kartu per menu
             </p>
         </div>
-
-        @foreach($predictions as $pred)
-        <div class="border-b border-gray-100 dark:border-gray-700/60 last:border-0">
-
-            {{-- Sub-header per menu --}}
-            <div class="px-6 py-3 bg-gray-50 dark:bg-gray-700/30 flex flex-wrap items-center justify-between gap-2">
-                <span class="font-bold text-sm text-gray-800 dark:text-white">{{ $pred['nama_menu'] }}</span>
-                <div class="flex items-center gap-3">
-                    <span class="text-xs text-gray-500 dark:text-gray-400">
-                        Total prediksi:
-                        <span class="font-bold text-primary-600 dark:text-primary-400">
-                            {{ number_format($pred['total_forecast'] ?? 0, 0) }} unit
-                        </span>
-                    </span>
-                    <span class="text-xs text-gray-400">|</span>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">
-                        MAE: <span class="font-semibold text-gray-700 dark:text-gray-300">{{ number_format($pred['mae'] ?? 0, 2) }}</span>
-                    </span>
-                </div>
-            </div>
-
-            {{-- Tabel forecast harian --}}
-            @if(count($pred['forecast'] ?? []))
-            <div class="overflow-x-auto">
-                <table style="width:100%; border-collapse:collapse;">
-                    <thead>
-                        <tr style="background-color:#1e40af;">
-                            <th style="padding:11px 20px; text-align:left;  font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Tanggal</th>
-                            <th style="padding:11px 20px; text-align:left;  font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Hari</th>
-                            <th style="padding:11px 20px; text-align:center; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Tipe Hari</th>
-                            <th style="padding:11px 20px; text-align:right; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Prediksi (unit)</th>
-                            <th style="padding:11px 20px; text-align:right; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Batas Bawah</th>
-                            <th style="padding:11px 20px; text-align:right; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Batas Atas</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($pred['forecast'] as $i => $f)
-                        <tr style="background-color:{{ $i % 2 === 0 ? '#ffffff' : '#f8fafc' }}; border-bottom:1px solid #e2e8f0;">
-                            <td style="padding:11px 20px; font-size:0.875rem; color:#334155; font-family:monospace; font-weight:500;">{{ $f['tanggal'] ?? '-' }}</td>
-                            <td style="padding:11px 20px; font-size:0.875rem; color:#334155; font-weight:500;">{{ $f['hari'] ?? '-' }}</td>
-                            <td style="padding:11px 20px; text-align:center;">
-                                @if(($f['day_type'] ?? '') === 'Weekend')
-                                    <span style="display:inline-block; background:#fef3c7; color:#92400e; padding:3px 12px; border-radius:9999px; font-size:0.72rem; font-weight:600;">Weekend</span>
-                                @else
-                                    <span style="display:inline-block; background:#dbeafe; color:#1d4ed8; padding:3px 12px; border-radius:9999px; font-size:0.72rem; font-weight:600;">Weekday</span>
-                                @endif
-                            </td>
-                            <td style="padding:11px 20px; text-align:right;">
-                                <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:3px 14px; border-radius:9999px; font-size:0.875rem; font-weight:700;">{{ $f['prediksi'] ?? 0 }}</span>
-                            </td>
-                            <td style="padding:11px 20px; text-align:right; font-size:0.875rem; color:#64748b;">{{ $f['batas_bawah'] ?? '-' }}</td>
-                            <td style="padding:11px 20px; text-align:right; font-size:0.875rem; color:#64748b;">{{ $f['batas_atas'] ?? '-' }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            @endif
-
-        </div>
-        @endforeach
     </div>
+
+    {{-- Satu card per menu --}}
+    @foreach($predictions as $pred)
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-4 overflow-hidden">
+
+        {{-- Header menu --}}
+        <div class="px-6 py-3 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-800/40 flex flex-wrap items-center justify-between gap-2">
+            <span class="font-bold text-sm text-blue-800 dark:text-blue-200">{{ $pred['nama_menu'] }}</span>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-500 dark:text-gray-400">
+                    Total prediksi:
+                    <span class="font-bold text-primary-600 dark:text-primary-400">
+                        {{ number_format($pred['total_forecast'] ?? 0, 0) }} unit
+                    </span>
+                </span>
+                <span class="text-xs text-gray-400">|</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">
+                    MAE: <span class="font-semibold text-gray-700 dark:text-gray-300">{{ number_format($pred['mae'] ?? 0, 2) }}</span>
+                </span>
+            </div>
+        </div>
+
+        {{-- Tabel forecast harian --}}
+        @if(count($pred['forecast'] ?? []))
+        <div class="overflow-x-auto">
+            <table style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr style="background-color:#1e40af;">
+                        <th style="padding:11px 20px; text-align:left;   font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Tanggal</th>
+                        <th style="padding:11px 20px; text-align:left;   font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Hari</th>
+                        <th style="padding:11px 20px; text-align:center; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Tipe Hari</th>
+                        <th style="padding:11px 20px; text-align:right;  font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Prediksi (unit)</th>
+                        <th style="padding:11px 20px; text-align:right;  font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Batas Bawah</th>
+                        <th style="padding:11px 20px; text-align:right;  font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Batas Atas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($pred['forecast'] as $i => $f)
+                    <tr style="background-color:{{ $i % 2 === 0 ? '#ffffff' : '#f8fafc' }}; border-bottom:1px solid #e2e8f0;">
+                        <td style="padding:11px 20px; font-size:0.875rem; color:#334155; font-family:monospace; font-weight:500;">{{ $f['tanggal'] ?? '-' }}</td>
+                        <td style="padding:11px 20px; font-size:0.875rem; color:#334155; font-weight:500;">{{ $f['hari'] ?? '-' }}</td>
+                        <td style="padding:11px 20px; text-align:center;">
+                            @if(($f['day_type'] ?? '') === 'Weekend')
+                                <span style="display:inline-block; background:#fef3c7; color:#92400e; padding:3px 12px; border-radius:9999px; font-size:0.72rem; font-weight:600;">Weekend</span>
+                            @else
+                                <span style="display:inline-block; background:#dbeafe; color:#1d4ed8; padding:3px 12px; border-radius:9999px; font-size:0.72rem; font-weight:600;">Weekday</span>
+                            @endif
+                        </td>
+                        <td style="padding:11px 20px; text-align:right;">
+                            <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:3px 14px; border-radius:9999px; font-size:0.875rem; font-weight:700;">{{ $f['prediksi'] ?? 0 }}</span>
+                        </td>
+                        <td style="padding:11px 20px; text-align:right; font-size:0.875rem; color:#64748b;">{{ $f['batas_bawah'] ?? '-' }}</td>
+                        <td style="padding:11px 20px; text-align:right; font-size:0.875rem; color:#64748b;">{{ $f['batas_atas'] ?? '-' }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
+
+    </div>
+    @endforeach
+
+    <div class="mb-4"></div>
     @endif
 
     {{-- ══════════════════════════════════════════════════════════════ --}}
@@ -329,6 +313,31 @@
         <div class="p-5">
             <img src="data:image/png;base64,{{ $chartAllItems }}"
                  alt="Prediksi vs Aktual Semua Menu" class="w-full rounded-lg"/>
+        </div>
+    </div>
+    @endif
+
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    {{-- PROSES 1 — LOG PREPROCESSING (dipindah ke bawah)               --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    @if(count($preprocessLogs))
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-base font-bold text-gray-900 dark:text-white">Proses 1 — Informasi Data &amp; Preprocessing</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Tahapan pemrosesan data sebelum model dilatih</p>
+        </div>
+        <div class="divide-y divide-gray-50 dark:divide-gray-700/30">
+            @foreach($preprocessLogs as $i => $log)
+            <div class="flex items-start gap-4 px-6 py-4">
+                <span class="shrink-0 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-xs font-bold flex items-center justify-center mt-0.5">
+                    {{ $i + 1 }}
+                </span>
+                <div>
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $log['tahap'] ?? '' }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $log['detail'] ?? '' }}</p>
+                </div>
+            </div>
+            @endforeach
         </div>
     </div>
     @endif

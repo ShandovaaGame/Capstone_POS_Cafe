@@ -151,7 +151,6 @@ class AsosiatifMenu extends Page
 
             if (! $replaced) {
                 array_unshift($results, $newResult);
-                $results = array_slice($results, 0, 3);
             }
 
             Cache::put('asosiatif_menu_results', $results, now()->addDays(30));

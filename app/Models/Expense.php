@@ -19,7 +19,7 @@ class Expense extends Model
     {
         return [
             'date' => 'date',
-            'amount' => 'decimal:2',
+            'amount' => 'integer',
         ];
     }
 }

@@ -12,7 +12,6 @@ class StockMovement extends Model
         'ingredient_batch_id',
         'order_id',
         'order_item_id',
-        'waste_record_id',
         'stock_adjustment_id',
         'movement_type',
         'source_type',
@@ -65,11 +64,6 @@ class StockMovement extends Model
     public function orderItem()
     {
         return $this->belongsTo(OrderItem::class);
-    }
-
-    public function wasteRecord()
-    {
-        return $this->belongsTo(WasteRecord::class);
     }
 
     public function stockAdjustment()

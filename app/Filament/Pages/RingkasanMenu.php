@@ -23,7 +23,7 @@ class RingkasanMenu extends Page
     public bool    $hasResult = false;
     public ?string $errorMsg  = null;
 
-    /** @var array<int, array<string, mixed>>  Hingga 3 hasil clustering terbaru */
+    /** @var array<int, array<string, mixed>> */
     public array $results = [];
 
     public function getView(): string
@@ -63,7 +63,7 @@ class RingkasanMenu extends Page
         $latestRunAt = $this->results[0]['last_run_at'] ?? '-';
         Notification::make()
             ->title('Data diperbarui')
-            ->body("Menampilkan {$this->getResultCount()} hasil clustering terakhir. Terbaru: {$latestRunAt}")
+            ->body("Menampilkan {$this->getResultCount()} hasil clustering. Terbaru: {$latestRunAt}")
             ->success()
             ->send();
     }
@@ -75,7 +75,7 @@ class RingkasanMenu extends Page
 
     private function loadFromCache(): void
     {
-        $cached = Cache::get('klasterisasi_menu_results', []);
+        $cached          = Cache::get('klasterisasi_menu_results', []);
         $this->results   = $cached;
         $this->hasResult = count($cached) > 0;
     }

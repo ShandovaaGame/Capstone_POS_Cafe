@@ -86,128 +86,195 @@
 
         {{-- ── TABEL KLASTERISASI BAHAN BAKU ────────────────────────── --}}
         @if(count($tableRows))
-        <div class="px-6 pt-6 pb-2">
-            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-1">
-                Tabel Klasterisasi Bahan Baku Berdasarkan Jumlah Penggunaan
-            </h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                Diurutkan berdasarkan klaster kemudian jumlah penggunaan tertinggi. Data:
-                {{ $result['date_from'] ?? '-' }} s/d {{ $result['date_to'] ?? '-' }}
-            </p>
-        </div>
-        <div class="overflow-x-auto mb-6">
-            <table style="width:100%; border-collapse:collapse;">
-                <thead>
-                    <tr style="background-color:#1e40af;">
-                        <th style="padding:12px 18px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; width:52px;">No</th>
-                        <th style="padding:12px 18px; text-align:left;   font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Nama Bahan Baku</th>
-                        <th style="padding:12px 18px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Satuan</th>
-                        <th style="padding:12px 18px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Total Penggunaan</th>
-                        <th style="padding:12px 18px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Klaster</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($tableRows as $ri => $row)
-                    <tr style="background-color:{{ $ri % 2 === 0 ? '#ffffff' : '#f8fafc' }}; border-bottom:1px solid #e2e8f0;">
-                        <td style="padding:11px 18px; text-align:right; font-size:0.8rem; color:#9ca3af;">{{ $ri + 1 }}</td>
-                        <td style="padding:11px 18px; text-align:left; font-size:0.875rem; font-weight:600; color:#1e40af;">{{ $row['Nama Bahan Baku'] }}</td>
-                        <td style="padding:11px 18px; text-align:center;">
-                            <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:2px 10px; border-radius:9999px; font-size:0.75rem; font-weight:600;">
-                                {{ $row['Satuan'] ?: '-' }}
-                            </span>
-                        </td>
-                        <td style="padding:11px 18px; text-align:right; font-size:0.875rem; font-weight:700; color:#0f172a;">
-                            {{ number_format($row['Total Penggunaan'], 2) }}
-                        </td>
-                        <td style="padding:11px 18px; text-align:center;">
-                            <span style="display:inline-block; background:#dbeafe; color:#1d4ed8; padding:3px 12px; border-radius:9999px; font-size:0.8rem; font-weight:700;">
-                                {{ $row['Klaster'] }}
-                            </span>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        <div class="mx-6 mt-6 mb-6 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                <h3 class="text-sm font-bold text-gray-800 dark:text-white">
+                    Tabel Klasterisasi Bahan Baku Berdasarkan Jumlah Penggunaan
+                </h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Diurutkan berdasarkan klaster kemudian jumlah penggunaan tertinggi. Data:
+                    {{ $result['date_from'] ?? '-' }} s/d {{ $result['date_to'] ?? '-' }}
+                </p>
+            </div>
+            <div class="overflow-x-auto">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="background-color:#1e40af;">
+                            <th style="padding:12px 18px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; width:52px;">No</th>
+                            <th style="padding:12px 18px; text-align:left;   font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Nama Bahan Baku</th>
+                            <th style="padding:12px 18px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Satuan</th>
+                            <th style="padding:12px 18px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Total Penggunaan</th>
+                            <th style="padding:12px 18px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Klaster</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($tableRows as $ri => $row)
+                        <tr style="background-color:{{ $ri % 2 === 0 ? '#ffffff' : '#f8fafc' }}; border-bottom:1px solid #e2e8f0;">
+                            <td style="padding:11px 18px; text-align:right; font-size:0.8rem; color:#9ca3af;">{{ $ri + 1 }}</td>
+                            <td style="padding:11px 18px; text-align:left; font-size:0.875rem; font-weight:600; color:#1e40af;">{{ $row['Nama Bahan Baku'] }}</td>
+                            <td style="padding:11px 18px; text-align:center;">
+                                <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:2px 10px; border-radius:9999px; font-size:0.75rem; font-weight:600;">
+                                    {{ $row['Satuan'] ?: '-' }}
+                                </span>
+                            </td>
+                            <td style="padding:11px 18px; text-align:right; font-size:0.875rem; font-weight:700; color:#0f172a;">
+                                {{ number_format($row['Total Penggunaan'], 2) }}
+                            </td>
+                            <td style="padding:11px 18px; text-align:center;">
+                                <span style="display:inline-block; background:#dbeafe; color:#1d4ed8; padding:3px 12px; border-radius:9999px; font-size:0.8rem; font-weight:700;">
+                                    {{ $row['Klaster'] }}
+                                </span>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
         @endif
 
         {{-- ── TABEL RATA-RATA PER KLASTER ──────────────────────────── --}}
         @if(count($rataRata))
-        <div class="px-6 pb-2">
-            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-1">
-                Tabel Rata-rata Jumlah Penggunaan Bahan Baku per Klaster
-            </h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                Diurutkan berdasarkan rata-rata jumlah penggunaan tertinggi ke terendah
-            </p>
+        <div class="mx-6 mb-6 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                <h3 class="text-sm font-bold text-gray-800 dark:text-white">
+                    Tabel Rata-rata Jumlah Penggunaan Bahan Baku per Klaster
+                </h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Diurutkan berdasarkan rata-rata jumlah penggunaan tertinggi ke terendah
+                </p>
+            </div>
+            <div class="overflow-x-auto">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="background-color:#1e40af;">
+                            <th style="padding:12px 18px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Klaster</th>
+                            <th style="padding:12px 18px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Rata-rata Jumlah Penggunaan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($rataRata as $ri => $row)
+                        <tr style="background-color:{{ $ri % 2 === 0 ? '#ffffff' : '#f8fafc' }}; border-bottom:1px solid #e2e8f0;">
+                            <td style="padding:11px 18px; text-align:center;">
+                                <span style="display:inline-block; background:#dbeafe; color:#1d4ed8; padding:3px 14px; border-radius:9999px; font-size:0.8rem; font-weight:700;">
+                                    Klaster {{ $row['Klaster'] }}
+                                </span>
+                            </td>
+                            <td style="padding:11px 18px; text-align:right; font-size:0.875rem; font-weight:700; color:#0f172a;">
+                                {{ number_format($row['Rata-rata Jumlah Penggunaan'], 2) }}
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-5 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/20">
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                    <span class="font-semibold text-gray-700 dark:text-gray-300">Keterangan:</span>
+                    Klaster dengan nilai rata-rata jumlah penggunaan yang lebih tinggi menunjukkan kelompok bahan baku yang lebih sering digunakan dalam operasional kafe. Informasi ini dapat membantu pengelola dalam mengidentifikasi bahan baku yang memiliki pergerakan penggunaan paling aktif sehingga dapat dijadikan dasar dalam menentukan prioritas pengawasan stok, frekuensi pembelian ulang, dan perencanaan persediaan bahan baku.
+                </p>
+            </div>
         </div>
-        <div class="overflow-x-auto mb-4">
-            <table style="width:100%; border-collapse:collapse;">
-                <thead>
-                    <tr style="background-color:#1e40af;">
-                        <th style="padding:12px 18px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Klaster</th>
-                        <th style="padding:12px 18px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Rata-rata Jumlah Penggunaan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($rataRata as $ri => $row)
-                    <tr style="background-color:{{ $ri % 2 === 0 ? '#ffffff' : '#f8fafc' }}; border-bottom:1px solid #e2e8f0;">
-                        <td style="padding:11px 18px; text-align:center;">
-                            <span style="display:inline-block; background:#dbeafe; color:#1d4ed8; padding:3px 14px; border-radius:9999px; font-size:0.8rem; font-weight:700;">
-                                Klaster {{ $row['Klaster'] }}
-                            </span>
-                        </td>
-                        <td style="padding:11px 18px; text-align:right; font-size:0.875rem; font-weight:700; color:#0f172a;">
-                            {{ number_format($row['Rata-rata Jumlah Penggunaan'], 2) }}
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-        <div class="px-6 pb-5">
-            <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                <span class="font-semibold text-gray-700 dark:text-gray-300">Keterangan:</span>
-                Klaster dengan nilai rata-rata jumlah penggunaan yang lebih tinggi menunjukkan kelompok bahan baku yang lebih sering digunakan dalam operasional kafe. Informasi ini dapat membantu pengelola dalam mengidentifikasi bahan baku yang memiliki pergerakan penggunaan paling aktif sehingga dapat dijadikan dasar dalam menentukan prioritas pengawasan stok, frekuensi pembelian ulang, dan perencanaan persediaan bahan baku.
-            </p>
+        @endif
+
+        {{-- ── RINGKASAN BAHAN BAKU PER KLASTER ───────────────────── --}}
+        @if(! empty($result['clusters']))
+        <div class="mx-6 mb-6 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                <h3 class="text-sm font-bold text-gray-800 dark:text-white">
+                    Ringkasan Bahan Baku per Klaster
+                </h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Daftar bahan baku yang masuk ke masing-masing klaster
+                </p>
+            </div>
+            <div class="overflow-x-auto">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="background-color:#1e40af;">
+                            <th style="padding:12px 18px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; width:80px;">Klaster</th>
+                            <th style="padding:12px 18px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Jml Bahan Baku</th>
+                            <th style="padding:12px 18px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Rata-rata Penggunaan</th>
+                            <th style="padding:12px 18px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Total Penggunaan</th>
+                            <th style="padding:12px 18px; text-align:left;   font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Daftar Bahan Baku</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($result['clusters'] as $ci => $cluster)
+                        <tr style="background-color:{{ $ci % 2 === 0 ? '#ffffff' : '#f8fafc' }}; border-bottom:1px solid #e2e8f0; vertical-align:top;">
+                            <td style="padding:14px 18px; text-align:center;">
+                                <span style="display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:9999px; background:#1d4ed8; color:#ffffff; font-size:0.875rem; font-weight:700;">
+                                    {{ $cluster['klaster'] }}
+                                </span>
+                            </td>
+                            <td style="padding:14px 18px; text-align:center; font-size:0.875rem; font-weight:700; color:#0f172a;">
+                                {{ $cluster['count'] }}
+                            </td>
+                            <td style="padding:14px 18px; text-align:right; font-size:0.875rem; font-weight:700; color:#0f172a;">
+                                {{ number_format($cluster['avg_usage'], 1) }}
+                            </td>
+                            <td style="padding:14px 18px; text-align:right; font-size:0.875rem; font-weight:700; color:#0f172a;">
+                                {{ number_format($cluster['total_usage'], 1) }}
+                            </td>
+                            <td style="padding:14px 18px; text-align:left;">
+                                <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                                    @foreach($cluster['ingredients'] as $ing)
+                                        <span style="display:inline-flex; align-items:center; gap:3px; padding:3px 10px; border-radius:9999px; background:#dbeafe; color:#1e40af; font-size:0.73rem; font-weight:600; white-space:nowrap;">
+                                            {{ $ing['name'] }}
+                                            @if($ing['unit'])
+                                                <span style="opacity:0.65; font-weight:500;">({{ $ing['unit'] }})</span>
+                                            @endif
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
         @endif
 
         {{-- ── VISUALISASI 1: Rata-rata per Klaster ────────────────── --}}
         @if(! empty($result['charts']['rata_klaster']))
-        <div class="border-t border-gray-100 dark:border-gray-700 px-6 pt-5 pb-2">
-            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-1">
-                Visualisasi Rata-rata Jumlah Penggunaan Bahan Baku per Klaster
-            </h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                Diagram batang perbandingan rata-rata penggunaan tiap klaster. Semakin tinggi batang, semakin aktif bahan baku dalam klaster tersebut.
-            </p>
-        </div>
-        <div class="px-6 pb-5">
-            <img src="data:image/png;base64,{{ $result['charts']['rata_klaster'] }}"
-                 alt="Rata-rata per Klaster" class="w-full rounded-lg border border-gray-100 dark:border-gray-700"/>
-        </div>
-        <div class="px-6 pb-6">
-            <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                <span class="font-semibold text-gray-700 dark:text-gray-300">Keterangan:</span>
-                Semakin tinggi nilai rata-rata jumlah penggunaan bahan baku pada suatu klaster, maka bahan baku dalam klaster tersebut memiliki aktivitas penggunaan yang relatif lebih tinggi. Informasi ini dapat digunakan sebagai dasar untuk menentukan prioritas pemantauan stok dan perencanaan pengadaan bahan baku.
-            </p>
+        <div class="mx-6 mb-6 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                <h3 class="text-sm font-bold text-gray-800 dark:text-white">
+                    Visualisasi Rata-rata Jumlah Penggunaan Bahan Baku per Klaster
+                </h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Diagram batang perbandingan rata-rata penggunaan tiap klaster. Semakin tinggi batang, semakin aktif bahan baku dalam klaster tersebut.
+                </p>
+            </div>
+            <div class="p-5">
+                <img src="data:image/png;base64,{{ $result['charts']['rata_klaster'] }}"
+                     alt="Rata-rata per Klaster" class="w-full rounded-lg"/>
+            </div>
+            <div class="px-5 pb-5">
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                    <span class="font-semibold text-gray-700 dark:text-gray-300">Keterangan:</span>
+                    Semakin tinggi nilai rata-rata jumlah penggunaan bahan baku pada suatu klaster, maka bahan baku dalam klaster tersebut memiliki aktivitas penggunaan yang relatif lebih tinggi. Informasi ini dapat digunakan sebagai dasar untuk menentukan prioritas pemantauan stok dan perencanaan pengadaan bahan baku.
+                </p>
+            </div>
         </div>
         @endif
 
         {{-- ── VISUALISASI 2: Jumlah per Bahan Baku (colored by Klaster) ──── --}}
         @if(! empty($result['charts']['bar']))
-        <div class="border-t border-gray-100 dark:border-gray-700 px-6 pt-5 pb-2">
-            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-1">
-                Visualisasi Jumlah Penggunaan Bahan Baku Berdasarkan Hasil Klasterisasi
-            </h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                Setiap batang mewakili total penggunaan bahan baku, diwarnai berdasarkan klaster yang diperoleh dari K-Means.
-            </p>
-        </div>
-        <div class="px-6 pb-6">
-            <img src="data:image/png;base64,{{ $result['charts']['bar'] }}"
-                 alt="Jumlah per Bahan Baku" class="w-full rounded-lg border border-gray-100 dark:border-gray-700"/>
+        <div class="mx-6 mb-6 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                <h3 class="text-sm font-bold text-gray-800 dark:text-white">
+                    Visualisasi Jumlah Penggunaan Bahan Baku Berdasarkan Hasil Klasterisasi
+                </h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Setiap batang mewakili total penggunaan bahan baku, diwarnai berdasarkan klaster yang diperoleh dari K-Means.
+                </p>
+            </div>
+            <div class="p-5">
+                <img src="data:image/png;base64,{{ $result['charts']['bar'] }}"
+                     alt="Jumlah per Bahan Baku" class="w-full rounded-lg"/>
+            </div>
         </div>
         @endif
 

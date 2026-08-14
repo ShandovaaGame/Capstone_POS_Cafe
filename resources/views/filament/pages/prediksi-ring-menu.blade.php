@@ -89,100 +89,104 @@
 
         {{-- ── Tabel Laporan Hasil Prediksi Penjualan + MAE ─────────────── --}}
         @if(count($predictions))
-        <div class="px-6 pt-5 pb-2">
-            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-1">
-                Laporan Hasil Prediksi Penjualan 2 Hari ke Depan
-            </h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                Nilai MAE (Mean Absolute Error) menunjukkan akurasi model — semakin kecil semakin akurat.
-            </p>
-        </div>
-        <div class="overflow-x-auto mb-6">
-            <table style="width:100%; border-collapse:collapse;">
-                <thead>
-                    <tr style="background-color:#1e40af;">
-                        <th style="padding:12px 20px; text-align:left; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Nama Menu</th>
-                        @if(count($forecastDays) > 0)
-                        <th style="padding:12px 20px; text-align:center; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">
-                            Hari 1 &mdash; {{ $forecastDays[0]['hari'] ?? '' }}, {{ $forecastDays[0]['tanggal'] ?? '' }}
-                        </th>
-                        @endif
-                        @if(count($forecastDays) > 1)
-                        <th style="padding:12px 20px; text-align:center; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">
-                            Hari 2 &mdash; {{ $forecastDays[1]['hari'] ?? '' }}, {{ $forecastDays[1]['tanggal'] ?? '' }}
-                        </th>
-                        @endif
-                        <th style="padding:12px 20px; text-align:right; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Total Prediksi</th>
-                        <th style="padding:12px 20px; text-align:right; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">MAE</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($predictions as $ri => $pred)
-                    @php
-                        $fc = $pred['forecast'] ?? [];
-                    @endphp
-                    <tr style="background-color:{{ $ri % 2 === 0 ? '#ffffff' : '#f8fafc' }}; border-bottom:1px solid #e2e8f0;">
-                        <td style="padding:12px 20px; font-size:0.875rem; font-weight:600; color:#1e40af; white-space:nowrap;">
-                            {{ $pred['nama_menu'] }}
-                        </td>
+        <div class="mx-6 mt-6 mb-6 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+                <h3 class="text-sm font-bold text-gray-800 dark:text-white">
+                    Laporan Hasil Prediksi Penjualan 2 Hari ke Depan
+                </h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Nilai MAE (Mean Absolute Error) menunjukkan akurasi model — semakin kecil semakin akurat.
+                </p>
+            </div>
+            <div class="overflow-x-auto">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="background-color:#1e40af;">
+                            <th style="padding:12px 20px; text-align:left; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Nama Menu</th>
+                            @if(count($forecastDays) > 0)
+                            <th style="padding:12px 20px; text-align:center; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">
+                                Hari 1 &mdash; {{ $forecastDays[0]['hari'] ?? '' }}, {{ $forecastDays[0]['tanggal'] ?? '' }}
+                            </th>
+                            @endif
+                            @if(count($forecastDays) > 1)
+                            <th style="padding:12px 20px; text-align:center; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">
+                                Hari 2 &mdash; {{ $forecastDays[1]['hari'] ?? '' }}, {{ $forecastDays[1]['tanggal'] ?? '' }}
+                            </th>
+                            @endif
+                            <th style="padding:12px 20px; text-align:right; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Total Prediksi</th>
+                            <th style="padding:12px 20px; text-align:right; font-size:0.72rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">MAE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($predictions as $ri => $pred)
+                        @php
+                            $fc = $pred['forecast'] ?? [];
+                        @endphp
+                        <tr style="background-color:{{ $ri % 2 === 0 ? '#ffffff' : '#f8fafc' }}; border-bottom:1px solid #e2e8f0;">
+                            <td style="padding:12px 20px; font-size:0.875rem; font-weight:600; color:#1e40af; white-space:nowrap;">
+                                {{ $pred['nama_menu'] }}
+                            </td>
 
-                        {{-- Hari 1 --}}
-                        @if(isset($fc[0]))
-                        <td style="padding:12px 20px; text-align:center;">
-                            <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:4px 14px; border-radius:9999px; font-size:0.875rem; font-weight:700;">
-                                {{ $fc[0]['prediksi'] ?? '-' }} unit
-                            </span>
-                            <div style="font-size:0.7rem; color:#94a3b8; margin-top:3px;">
-                                {{ $fc[0]['day_type'] ?? '' }}
-                            </div>
-                        </td>
-                        @else
-                        <td style="padding:12px 20px; text-align:center; color:#94a3b8; font-size:0.875rem;">—</td>
-                        @endif
+                            {{-- Hari 1 --}}
+                            @if(isset($fc[0]))
+                            <td style="padding:12px 20px; text-align:center;">
+                                <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:4px 14px; border-radius:9999px; font-size:0.875rem; font-weight:700;">
+                                    {{ $fc[0]['prediksi'] ?? '-' }} unit
+                                </span>
+                                <div style="font-size:0.7rem; color:#94a3b8; margin-top:3px;">
+                                    {{ $fc[0]['day_type'] ?? '' }}
+                                </div>
+                            </td>
+                            @else
+                            <td style="padding:12px 20px; text-align:center; color:#94a3b8; font-size:0.875rem;">—</td>
+                            @endif
 
-                        {{-- Hari 2 --}}
-                        @if(isset($fc[1]))
-                        <td style="padding:12px 20px; text-align:center;">
-                            <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:4px 14px; border-radius:9999px; font-size:0.875rem; font-weight:700;">
-                                {{ $fc[1]['prediksi'] ?? '-' }} unit
-                            </span>
-                            <div style="font-size:0.7rem; color:#94a3b8; margin-top:3px;">
-                                {{ $fc[1]['day_type'] ?? '' }}
-                            </div>
-                        </td>
-                        @elseif(count($forecastDays) > 1)
-                        <td style="padding:12px 20px; text-align:center; color:#94a3b8; font-size:0.875rem;">—</td>
-                        @endif
+                            {{-- Hari 2 --}}
+                            @if(isset($fc[1]))
+                            <td style="padding:12px 20px; text-align:center;">
+                                <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:4px 14px; border-radius:9999px; font-size:0.875rem; font-weight:700;">
+                                    {{ $fc[1]['prediksi'] ?? '-' }} unit
+                                </span>
+                                <div style="font-size:0.7rem; color:#94a3b8; margin-top:3px;">
+                                    {{ $fc[1]['day_type'] ?? '' }}
+                                </div>
+                            </td>
+                            @elseif(count($forecastDays) > 1)
+                            <td style="padding:12px 20px; text-align:center; color:#94a3b8; font-size:0.875rem;">—</td>
+                            @endif
 
-                        {{-- Total prediksi --}}
-                        <td style="padding:12px 20px; text-align:right; font-size:0.875rem; font-weight:700; color:#0f172a;">
-                            {{ number_format($pred['total_forecast'] ?? 0, 0) }} unit
-                        </td>
+                            {{-- Total prediksi --}}
+                            <td style="padding:12px 20px; text-align:right; font-size:0.875rem; font-weight:700; color:#0f172a;">
+                                {{ number_format($pred['total_forecast'] ?? 0, 0) }} unit
+                            </td>
 
-                        {{-- MAE --}}
-                        <td style="padding:12px 20px; text-align:right; font-size:0.875rem; font-weight:700; color:#0f172a;">
-                            {{ isset($pred['mae']) ? number_format($pred['mae'], 2) : '-' }}
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                            {{-- MAE --}}
+                            <td style="padding:12px 20px; text-align:right; font-size:0.875rem; font-weight:700; color:#0f172a;">
+                                {{ isset($pred['mae']) ? number_format($pred['mae'], 2) : '-' }}
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
         @endif
 
         {{-- ── Analisis Weekday vs Weekend ──────────────────────────────── --}}
         @if(! empty($result['chart_feature_importance']))
-        <div class="px-6 pb-2">
-            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-1">
-                Analisis Rata-rata Penjualan per Menu: Weekday vs Weekend
-            </h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                Perbandingan rata-rata jumlah penjualan tiap menu pada hari kerja dan akhir pekan berdasarkan data historis yang digunakan.
-            </p>
-        </div>
-        <div class="px-6 pb-6">
-            <img src="data:image/png;base64,{{ $result['chart_feature_importance'] }}"
-                 alt="Analisis Weekday vs Weekend" class="w-full rounded-lg border border-gray-100 dark:border-gray-700"/>
+        <div class="mx-6 mb-6 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+                <h3 class="text-sm font-bold text-gray-800 dark:text-white">
+                    Analisis Rata-rata Penjualan per Menu: Weekday vs Weekend
+                </h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Perbandingan rata-rata jumlah penjualan tiap menu pada hari kerja dan akhir pekan berdasarkan data historis yang digunakan.
+                </p>
+            </div>
+            <div class="p-5">
+                <img src="data:image/png;base64,{{ $result['chart_feature_importance'] }}"
+                     alt="Analisis Weekday vs Weekend" class="w-full rounded-lg"/>
+            </div>
         </div>
         @endif
 

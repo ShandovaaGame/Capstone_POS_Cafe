@@ -1,58 +1,75 @@
 <x-filament-panels::page>
 
 {{-- ══════════════════════════════════════════════════════════════════════ --}}
-{{-- FORM INPUT RENTANG TANGGAL                                             --}}
+{{-- INPUT RENTANG TANGGAL                                                   --}}
 {{-- ══════════════════════════════════════════════════════════════════════ --}}
-<div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 mb-6">
-    <h2 class="text-base font-bold text-gray-800 dark:text-white mb-1">
-        Input Rentang Tanggal Data Penggunaan Bahan Baku
-    </h2>
-    <p class="text-xs text-gray-500 dark:text-gray-400 mb-5">
-        Tentukan rentang tanggal data historis penggunaan bahan baku yang akan diolah oleh K-Means Clustering. Rentang tanggal minimal <span class="font-semibold text-primary-600">3 bulan</span>.
-    </p>
+<div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 shadow-sm overflow-hidden">
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-        <div>
-            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-                Tanggal Mulai
-            </label>
-            <input type="date"
-                   wire:model.live="inputDateFrom"
-                   class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"/>
+    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Rentang Tanggal Data Penggunaan Bahan Baku</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Tentukan periode data historis penggunaan bahan baku untuk K-Means Clustering (minimal 3 bulan)</p>
+    </div>
+
+    <div class="px-6 py-5">
+        <div style="border: 2px solid #3b82f6; border-radius: 10px; padding: 16px 20px; background: rgba(59,130,246,0.04);">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
+
+                <div class="flex-1">
+                    <label style="display:block; font-size:0.72rem; font-weight:700; color:#3b82f6; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">
+                        Dari Tanggal
+                    </label>
+                    <input type="date"
+                           wire:model.live="inputDateFrom"
+                           class="block w-full rounded-lg border border-gray-300 dark:border-gray-600
+                                  bg-white dark:bg-gray-900 text-gray-900 dark:text-white
+                                  px-4 py-2.5 text-sm shadow-sm
+                                  focus:border-primary-500 focus:ring-1 focus:ring-primary-500
+                                  transition" />
+                </div>
+
+                <div class="hidden sm:flex items-center justify-center pb-0.5">
+                    <span style="color:#3b82f6; font-size:0.875rem; font-weight:700;">s/d</span>
+                </div>
+
+                <div class="flex-1">
+                    <label style="display:block; font-size:0.72rem; font-weight:700; color:#3b82f6; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">
+                        Sampai Tanggal
+                    </label>
+                    <input type="date"
+                           wire:model.live="inputDateTo"
+                           class="block w-full rounded-lg border border-gray-300 dark:border-gray-600
+                                  bg-white dark:bg-gray-900 text-gray-900 dark:text-white
+                                  px-4 py-2.5 text-sm shadow-sm
+                                  focus:border-primary-500 focus:ring-1 focus:ring-primary-500
+                                  transition" />
+                </div>
+
+            </div>
         </div>
-        <div>
-            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-                Tanggal Selesai
-            </label>
-            <input type="date"
-                   wire:model.live="inputDateTo"
-                   class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"/>
+
+        <div class="mt-4">
+            @if(! $inputDateFrom && ! $inputDateTo)
+                <div class="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-4 py-3">
+                    <p class="text-xs text-amber-700 dark:text-amber-300">
+                        Pilih <strong>Dari Tanggal</strong> dan <strong>Sampai Tanggal</strong> dengan rentang minimal <strong>3 bulan</strong>, lalu tekan <strong>"Jalankan Clustering Bahan Baku"</strong> di kanan atas.
+                    </p>
+                </div>
+            @elseif($dateRangeError)
+                <div class="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3">
+                    <p class="text-xs text-red-700 dark:text-red-300">{{ $dateRangeError }}</p>
+                </div>
+            @elseif($this->isDateRangeValid())
+                <div class="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-4 py-3">
+                    <p class="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                        Rentang tanggal valid: <strong>{{ \Carbon\Carbon::parse($inputDateFrom)->translatedFormat('d M Y') }}</strong> s/d <strong>{{ \Carbon\Carbon::parse($inputDateTo)->translatedFormat('d M Y') }}</strong>
+                        ({{ \Carbon\Carbon::parse($inputDateFrom)->diffInMonths(\Carbon\Carbon::parse($inputDateTo)) }} bulan).
+                        Tekan <strong>"Jalankan Clustering Bahan Baku"</strong> di kanan atas.
+                    </p>
+                </div>
+            @endif
         </div>
     </div>
 
-    {{-- Status rentang tanggal --}}
-    @if(! $inputDateFrom && ! $inputDateTo)
-        <div class="rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 px-4 py-3">
-            <p class="text-xs text-blue-700 dark:text-blue-300">
-                Isi rentang tanggal data riwayat penggunaan bahan baku yang akan digunakan untuk diolah pada data mining klasterisasi penggunaan bahan baku. Rentang tanggal minimal <span class="font-semibold">3 bulan</span>.
-            </p>
-        </div>
-    @elseif($dateRangeError)
-        <div class="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 px-4 py-3">
-            <p class="text-xs text-red-700 dark:text-red-300">{{ $dateRangeError }}</p>
-        </div>
-    @elseif($this->isDateRangeValid())
-        <div class="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 px-4 py-3">
-            <p class="text-xs text-green-700 dark:text-green-300">
-                Rentang tanggal valid:
-                <span class="font-semibold">{{ \Carbon\Carbon::parse($inputDateFrom)->translatedFormat('d M Y') }}</span>
-                s/d
-                <span class="font-semibold">{{ \Carbon\Carbon::parse($inputDateTo)->translatedFormat('d M Y') }}</span>
-                ({{ \Carbon\Carbon::parse($inputDateFrom)->diffInMonths(\Carbon\Carbon::parse($inputDateTo)) }} bulan).
-                Tekan tombol <span class="font-semibold">"Jalankan Clustering Bahan Baku"</span> di kanan atas.
-            </p>
-        </div>
-    @endif
 </div>
 
 {{-- ── Error dari FastAPI ──────────────────────────────────────────────── --}}
@@ -126,31 +143,6 @@
             <p class="text-xs text-gray-400 mt-1">Dari data pemakaian harian</p>
         </div>
     </div>
-
-    {{-- ══════════════════════════════════════════════════════════════ --}}
-    {{-- LOG PREPROCESSING                                               --}}
-    {{-- ══════════════════════════════════════════════════════════════ --}}
-    @if(count($preprocessLogs))
-    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-8 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 class="text-base font-bold text-gray-900 dark:text-white">Tahapan Preprocessing Data</h2>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Proses pembersihan dan persiapan data sebelum clustering bahan baku</p>
-        </div>
-        <div class="divide-y divide-gray-50 dark:divide-gray-700/30">
-            @foreach($preprocessLogs as $i => $log)
-            <div class="flex items-start gap-4 px-6 py-4">
-                <span class="shrink-0 w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs font-bold flex items-center justify-center mt-0.5">
-                    {{ $i + 1 }}
-                </span>
-                <div>
-                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $log['tahap'] }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $log['detail'] }}</p>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
 
     {{-- ══════════════════════════════════════════════════════════════ --}}
     {{-- TABEL KLASTERISASI BAHAN BAKU                                  --}}
@@ -282,65 +274,110 @@
     @endif
 
     {{-- ══════════════════════════════════════════════════════════════ --}}
-    {{-- VISUALISASI 3 & 4: Elbow + Silhouette                         --}}
+    {{-- VISUALISASI 3: Elbow Method                                     --}}
     {{-- ══════════════════════════════════════════════════════════════ --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        @if($chartElbow)
-        <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 class="text-base font-bold text-gray-900 dark:text-white">Elbow Method</h2>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Penentuan jumlah klaster optimal berdasarkan inertia (SSE)</p>
-            </div>
-            <div class="p-4">
-                <img src="data:image/png;base64,{{ $chartElbow }}" alt="Elbow Chart" class="w-full rounded"/>
-            </div>
+    @if($chartElbow)
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-base font-bold text-gray-900 dark:text-white">Elbow Method</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Penentuan jumlah klaster optimal berdasarkan inertia (SSE)</p>
         </div>
-        @endif
-        @if($chartSilhouette)
-        <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 class="text-base font-bold text-gray-900 dark:text-white">Silhouette Score per K</h2>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Kualitas pengelompokan — semakin tinggi semakin baik</p>
-            </div>
-            <div class="p-4">
-                <img src="data:image/png;base64,{{ $chartSilhouette }}" alt="Silhouette Chart" class="w-full rounded"/>
-            </div>
+        <div class="p-5">
+            <img src="data:image/png;base64,{{ $chartElbow }}" alt="Elbow Chart" class="w-full rounded"/>
         </div>
-        @endif
     </div>
+    @endif
 
     {{-- ══════════════════════════════════════════════════════════════ --}}
-    {{-- RINGKASAN PER KLASTER (summary cards)                          --}}
+    {{-- VISUALISASI 4: Silhouette Score per K                           --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    @if($chartSilhouette)
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-8 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-base font-bold text-gray-900 dark:text-white">Silhouette Score per K</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Kualitas pengelompokan — semakin tinggi semakin baik</p>
+        </div>
+        <div class="p-5">
+            <img src="data:image/png;base64,{{ $chartSilhouette }}" alt="Silhouette Chart" class="w-full rounded"/>
+        </div>
+    </div>
+    @endif
+
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    {{-- RINGKASAN PER KLASTER (tabel)                                   --}}
     {{-- ══════════════════════════════════════════════════════════════ --}}
     @if(count($clusters))
-    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-8 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h2 class="text-base font-bold text-gray-900 dark:text-white">Ringkasan Bahan Baku per Klaster</h2>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Daftar bahan baku yang masuk ke masing-masing klaster</p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-5">
-            @foreach($clusters as $cluster)
-            <div class="rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm font-bold">
-                        {{ $cluster['klaster'] }}
-                    </span>
-                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ $cluster['count'] }} bahan baku</span>
-                </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                    Rata-rata: <span class="font-semibold text-gray-700 dark:text-gray-200">{{ number_format($cluster['avg_usage'], 1) }}</span>
-                    &nbsp;·&nbsp;
-                    Total: <span class="font-semibold text-gray-700 dark:text-gray-200">{{ number_format($cluster['total_usage'], 1) }}</span>
-                </p>
-                <div class="flex flex-wrap gap-1.5">
-                    @foreach($cluster['ingredients'] as $ing)
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
-                            {{ $ing['name'] }}
-                            @if($ing['unit'])
-                                <span class="opacity-60">({{ $ing['unit'] }})</span>
-                            @endif
-                        </span>
+        <div class="overflow-x-auto">
+            <table style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr style="background-color:#1e40af;">
+                        <th style="padding:12px 18px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; width:80px;">Klaster</th>
+                        <th style="padding:12px 18px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Jml Bahan Baku</th>
+                        <th style="padding:12px 18px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Rata-rata Penggunaan</th>
+                        <th style="padding:12px 18px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Total Penggunaan</th>
+                        <th style="padding:12px 18px; text-align:left;   font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em;">Daftar Bahan Baku</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($clusters as $ci => $cluster)
+                    <tr style="background-color:{{ $ci % 2 === 0 ? '#ffffff' : '#f8fafc' }}; border-bottom:1px solid #e2e8f0; vertical-align:top;">
+                        <td style="padding:14px 18px; text-align:center;">
+                            <span style="display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:9999px; background:#1d4ed8; color:#ffffff; font-size:0.875rem; font-weight:700;">
+                                {{ $cluster['klaster'] }}
+                            </span>
+                        </td>
+                        <td style="padding:14px 18px; text-align:center; font-size:0.875rem; font-weight:700; color:#0f172a;">
+                            {{ $cluster['count'] }}
+                        </td>
+                        <td style="padding:14px 18px; text-align:right; font-size:0.875rem; font-weight:700; color:#0f172a;">
+                            {{ number_format($cluster['avg_usage'], 1) }}
+                        </td>
+                        <td style="padding:14px 18px; text-align:right; font-size:0.875rem; font-weight:700; color:#0f172a;">
+                            {{ number_format($cluster['total_usage'], 1) }}
+                        </td>
+                        <td style="padding:14px 18px; text-align:left;">
+                            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                                @foreach($cluster['ingredients'] as $ing)
+                                    <span style="display:inline-flex; align-items:center; gap:3px; padding:3px 10px; border-radius:9999px; background:#dbeafe; color:#1e40af; font-size:0.73rem; font-weight:600; white-space:nowrap;">
+                                        {{ $ing['name'] }}
+                                        @if($ing['unit'])
+                                            <span style="opacity:0.65; font-weight:500;">({{ $ing['unit'] }})</span>
+                                        @endif
+                                    </span>
+                                @endforeach
+                            </div>
+                        </td>
+                    </tr>
                     @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
+
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    {{-- TAHAPAN PREPROCESSING DATA (dipindah ke bawah)                  --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    @if(count($preprocessLogs))
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-8 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-base font-bold text-gray-900 dark:text-white">Tahapan Preprocessing Data</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Proses pembersihan dan persiapan data sebelum clustering bahan baku</p>
+        </div>
+        <div class="divide-y divide-gray-50 dark:divide-gray-700/30">
+            @foreach($preprocessLogs as $i => $log)
+            <div class="flex items-start gap-4 px-6 py-4">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-xs font-bold flex items-center justify-center mt-0.5">
+                    {{ $i + 1 }}
+                </span>
+                <div>
+                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $log['tahap'] }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $log['detail'] }}</p>
                 </div>
             </div>
             @endforeach

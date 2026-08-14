@@ -3,59 +3,218 @@
 {{-- ══════════════════════════════════════════════════════════════════════ --}}
 {{-- INPUT RENTANG TANGGAL                                                   --}}
 {{-- ══════════════════════════════════════════════════════════════════════ --}}
-<div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 mb-6 shadow-sm">
-    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4">
-        Rentang Tanggal Data Penjualan
-    </h3>
+<div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 shadow-sm overflow-hidden">
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                Dari Tanggal
-            </label>
-            <input type="date"
-                   wire:model.live="inputDateFrom"
-                   class="block w-full rounded-lg border border-gray-300 dark:border-gray-600
-                          bg-white dark:bg-gray-900 text-gray-900 dark:text-white
-                          px-4 py-2.5 text-sm shadow-sm
-                          focus:border-primary-500 focus:ring-1 focus:ring-primary-500
-                          transition" />
+    {{-- Header kartu --}}
+    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Rentang Tanggal Data Penjualan</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Pilih periode data transaksi yang akan dianalisis (minimal 3 bulan)</p>
+    </div>
+
+    {{-- Input tanggal --}}
+    <div class="px-6 py-5">
+        <div style="border: 2px solid #3b82f6; border-radius: 10px; padding: 16px 20px; background: rgba(59,130,246,0.04);">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
+
+                {{-- Dari Tanggal --}}
+                <div class="flex-1">
+                    <label style="display:block; font-size:0.72rem; font-weight:700; color:#3b82f6; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">
+                        Dari Tanggal
+                    </label>
+                    <input type="date"
+                           wire:model.live="inputDateFrom"
+                           class="block w-full rounded-lg border border-gray-300 dark:border-gray-600
+                                  bg-white dark:bg-gray-900 text-gray-900 dark:text-white
+                                  px-4 py-2.5 text-sm shadow-sm
+                                  focus:border-primary-500 focus:ring-1 focus:ring-primary-500
+                                  transition" />
+                </div>
+
+                {{-- Pemisah --}}
+                <div class="hidden sm:flex items-center justify-center pb-0.5">
+                    <span style="color:#3b82f6; font-size:0.875rem; font-weight:700;">s/d</span>
+                </div>
+
+                {{-- Sampai Tanggal --}}
+                <div class="flex-1">
+                    <label style="display:block; font-size:0.72rem; font-weight:700; color:#3b82f6; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">
+                        Sampai Tanggal
+                    </label>
+                    <input type="date"
+                           wire:model.live="inputDateTo"
+                           class="block w-full rounded-lg border border-gray-300 dark:border-gray-600
+                                  bg-white dark:bg-gray-900 text-gray-900 dark:text-white
+                                  px-4 py-2.5 text-sm shadow-sm
+                                  focus:border-primary-500 focus:ring-1 focus:ring-primary-500
+                                  transition" />
+                </div>
+
+            </div>
         </div>
-        <div>
-            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                Sampai Tanggal
-            </label>
-            <input type="date"
-                   wire:model.live="inputDateTo"
-                   class="block w-full rounded-lg border border-gray-300 dark:border-gray-600
-                          bg-white dark:bg-gray-900 text-gray-900 dark:text-white
-                          px-4 py-2.5 text-sm shadow-sm
-                          focus:border-primary-500 focus:ring-1 focus:ring-primary-500
-                          transition" />
+
+        {{-- Status validasi --}}
+        <div class="mt-4">
+            @if(! $this->isDatesValid())
+                <div class="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-4 py-3">
+                    <p class="text-xs text-amber-700 dark:text-amber-300">
+                        @if(empty($inputDateFrom) && empty($inputDateTo))
+                            Pilih <strong>Dari Tanggal</strong> dan <strong>Sampai Tanggal</strong> dengan rentang minimal <strong>3 bulan</strong>, lalu tekan <strong>"Jalankan Clustering"</strong> di kanan atas.
+                        @elseif(empty($inputDateFrom) || empty($inputDateTo))
+                            Lengkapi kedua tanggal — <strong>Dari Tanggal</strong> dan <strong>Sampai Tanggal</strong> harus diisi.
+                        @else
+                            Rentang tanggal terlalu pendek. Pilih periode minimal <strong>3 bulan</strong>.
+                        @endif
+                    </p>
+                </div>
+            @else
+                <div class="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-4 py-3">
+                    <p class="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                        Rentang tanggal valid. Tekan <strong>"Jalankan Clustering"</strong> di kanan atas untuk memulai analisis.
+                    </p>
+                </div>
+            @endif
         </div>
     </div>
 
-    {{-- Hint validasi --}}
-    @if(! $this->isDatesValid())
-        <div class="mt-3 flex items-start gap-2 text-amber-600 dark:text-amber-400">
-            <p class="text-xs">
-                @if(empty($inputDateFrom) && empty($inputDateTo))
-                    Isi rentang tanggal minimal <strong>3 bulan</strong>, lalu tekan
-                    <strong>"Jalankan Clustering"</strong> di kanan atas.
-                @elseif(empty($inputDateFrom) || empty($inputDateTo))
-                    Lengkapi kedua tanggal (dari dan sampai).
-                @else
-                    Rentang tanggal minimal <strong>3 bulan</strong>. Perpanjang periode yang dipilih.
-                @endif
-            </p>
+</div>
+
+{{-- ══════════════════════════════════════════════════════════════════════ --}}
+{{-- PENETAPAN BATAS KATEGORISASI PENJUALAN                                  --}}
+{{-- ══════════════════════════════════════════════════════════════════════ --}}
+@php
+    $larisMax       = $sangat_laris_batas;
+    $cukupMax       = $laris_batas_bawah - 1;
+    $kurangLarisBatas = $cukup_batas_bawah;
+@endphp
+<div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 shadow-sm overflow-hidden">
+
+    {{-- Header kartu --}}
+    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Penetapan Batas Kategorisasi Penjualan</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Tetapkan batas jumlah penjualan untuk setiap kategori sebelum menjalankan analisis</p>
+    </div>
+
+    <div class="px-6 py-5">
+        <div style="border: 2px solid #3b82f6; border-radius: 10px; padding: 20px; background: rgba(59,130,246,0.04);">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                {{-- Sangat Laris --}}
+                <div class="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500 shrink-0"></span>
+                        <span style="font-size:0.72rem; font-weight:700; color:#059669; text-transform:uppercase; letter-spacing:0.06em;">Sangat Laris</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">Lebih dari</span>
+                        <input type="number"
+                               wire:model.live="sangat_laris_batas"
+                               min="1"
+                               class="w-24 rounded-lg border border-gray-300 dark:border-gray-600
+                                      bg-white dark:bg-gray-900 text-gray-900 dark:text-white
+                                      px-3 py-1.5 text-sm shadow-sm text-center
+                                      focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition" />
+                        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">penjualan</span>
+                    </div>
+                    <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-2 font-medium">
+                        → Menu dengan total &gt; {{ $sangat_laris_batas }} penjualan
+                    </p>
+                </div>
+
+                {{-- Laris --}}
+                <div class="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="w-3 h-3 rounded-full bg-blue-500 shrink-0"></span>
+                        <span style="font-size:0.72rem; font-weight:700; color:#1d4ed8; text-transform:uppercase; letter-spacing:0.06em;">Laris</span>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">Antara</span>
+                        <input type="number"
+                               wire:model.live="laris_batas_bawah"
+                               min="1"
+                               class="w-24 rounded-lg border border-gray-300 dark:border-gray-600
+                                      bg-white dark:bg-gray-900 text-gray-900 dark:text-white
+                                      px-3 py-1.5 text-sm shadow-sm text-center
+                                      focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" />
+                        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">sampai</span>
+                        <span class="w-24 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800
+                                     px-3 py-1.5 text-sm text-center text-gray-500 dark:text-gray-400 select-none">
+                            {{ $larisMax }}
+                        </span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">penjualan</span>
+                    </div>
+                    <p class="text-xs text-blue-600 dark:text-blue-400 mt-2 font-medium">
+                        → Menu dengan total {{ $laris_batas_bawah }} – {{ $larisMax }} penjualan
+                    </p>
+                </div>
+
+                {{-- Cukup --}}
+                <div class="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="w-3 h-3 rounded-full bg-amber-500 shrink-0"></span>
+                        <span style="font-size:0.72rem; font-weight:700; color:#b45309; text-transform:uppercase; letter-spacing:0.06em;">Cukup</span>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">Antara</span>
+                        <input type="number"
+                               wire:model.live="cukup_batas_bawah"
+                               min="1"
+                               class="w-24 rounded-lg border border-gray-300 dark:border-gray-600
+                                      bg-white dark:bg-gray-900 text-gray-900 dark:text-white
+                                      px-3 py-1.5 text-sm shadow-sm text-center
+                                      focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition" />
+                        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">sampai</span>
+                        <span class="w-24 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800
+                                     px-3 py-1.5 text-sm text-center text-gray-500 dark:text-gray-400 select-none">
+                            {{ $cukupMax }}
+                        </span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">penjualan</span>
+                    </div>
+                    <p class="text-xs text-amber-600 dark:text-amber-400 mt-2 font-medium">
+                        → Menu dengan total {{ $cukup_batas_bawah }} – {{ $cukupMax }} penjualan
+                    </p>
+                </div>
+
+                {{-- Kurang Laris --}}
+                <div class="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="w-3 h-3 rounded-full bg-red-500 shrink-0"></span>
+                        <span style="font-size:0.72rem; font-weight:700; color:#dc2626; text-transform:uppercase; letter-spacing:0.06em;">Kurang Laris</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">Kurang dari</span>
+                        <span class="w-24 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800
+                                     px-3 py-1.5 text-sm text-center text-gray-500 dark:text-gray-400 select-none">
+                            {{ $kurangLarisBatas }}
+                        </span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">penjualan</span>
+                    </div>
+                    <p class="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
+                        → Menu dengan total &lt; {{ $kurangLarisBatas }} penjualan
+                    </p>
+                </div>
+
+            </div>
         </div>
-    @else
-        <div class="mt-3 flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
-            <p class="text-xs font-medium">
-                Rentang tanggal valid. Tekan <strong>"Jalankan Clustering"</strong> di kanan atas.
-            </p>
+
+        {{-- Status validasi kategorisasi --}}
+        <div class="mt-4">
+            @if(! $this->isCategoryValid())
+                <div class="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-4 py-3">
+                    <p class="text-xs text-amber-700 dark:text-amber-300">
+                        Batas kategorisasi tidak valid. Pastikan: <strong>Sangat Laris</strong> &gt; <strong>Batas Bawah Laris</strong> &gt; <strong>Batas Bawah Cukup</strong> &gt; 0.
+                    </p>
+                </div>
+            @else
+                <div class="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-4 py-3">
+                    <p class="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                        Batas kategorisasi valid. Sangat Laris (&gt;{{ $sangat_laris_batas }}) · Laris ({{ $laris_batas_bawah }}–{{ $larisMax }}) · Cukup ({{ $cukup_batas_bawah }}–{{ $cukupMax }}) · Kurang Laris (&lt;{{ $kurangLarisBatas }})
+                    </p>
+                </div>
+            @endif
         </div>
-    @endif
+    </div>
+
 </div>
 
 {{-- ── Error ─────────────────────────────────────────────────────────────── --}}
@@ -105,48 +264,6 @@
             <span>Rentang aktual: <strong>{{ $dateFrom }}</strong> s/d <strong>{{ $dateTo }}</strong></span>
         </div>
     </div>
-
-    {{-- ── Stat bar ──────────────────────────────────────────────────────── --}}
-    <div class="grid grid-cols-3 gap-4 mb-8">
-        @foreach([
-            ['label' => 'K Optimal',        'value' => $bestK,
-             'sub' => 'Jumlah klaster terbaik'],
-            ['label' => 'Silhouette Score',  'value' => number_format($silhouetteScore, 3),
-             'sub' => $silhouetteScore >= 0.7 ? 'Kualitas tinggi' : ($silhouetteScore >= 0.5 ? 'Kualitas sedang' : 'Kualitas rendah')],
-            ['label' => 'Menu Dianalisis',   'value' => $totalMenu,
-             'sub' => 'Dari data riwayat pesanan'],
-        ] as $s)
-            <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm">
-                <p class="text-xs text-gray-400 uppercase tracking-widest mb-2">{{ $s['label'] }}</p>
-                <p class="text-3xl font-bold text-gray-800 dark:text-white">{{ $s['value'] }}</p>
-                <p class="text-xs text-gray-400 mt-1">{{ $s['sub'] }}</p>
-            </div>
-        @endforeach
-    </div>
-
-    {{-- ── Log Tahapan Analisis ─────────────────────────────────────────── --}}
-    @if(count($preprocessLogs))
-    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-8 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
-            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                Tahapan Analisis Data
-            </h2>
-        </div>
-        <div class="divide-y divide-gray-50 dark:divide-gray-700/40">
-            @foreach($preprocessLogs as $i => $log)
-                <div class="flex items-start gap-4 px-6 py-4">
-                    <span class="shrink-0 w-6 h-6 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-xs font-bold flex items-center justify-center mt-0.5">
-                        {{ $i + 1 }}
-                    </span>
-                    <div>
-                        <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $log['tahap'] }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $log['detail'] }}</p>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
 
     {{-- ═══════════════════════════════════════════════════════════════════ --}}
     {{-- LAPORAN HASIL CLUSTERING MENU CAFE                                   --}}
@@ -334,19 +451,19 @@
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                 <div class="flex items-center gap-1.5">
                     <span class="w-3 h-3 rounded-full bg-emerald-500 shrink-0"></span>
-                    <span class="text-gray-600 dark:text-gray-400"><strong>Sangat Laris</strong> ≥ 400</span>
+                    <span class="text-gray-600 dark:text-gray-400"><strong>Sangat Laris</strong> &gt; {{ $sangat_laris_batas }}</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                     <span class="w-3 h-3 rounded-full bg-blue-500 shrink-0"></span>
-                    <span class="text-gray-600 dark:text-gray-400"><strong>Laris</strong> 350–399</span>
+                    <span class="text-gray-600 dark:text-gray-400"><strong>Laris</strong> {{ $laris_batas_bawah }}–{{ $sangat_laris_batas }}</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                     <span class="w-3 h-3 rounded-full bg-amber-500 shrink-0"></span>
-                    <span class="text-gray-600 dark:text-gray-400"><strong>Cukup</strong> 200–349</span>
+                    <span class="text-gray-600 dark:text-gray-400"><strong>Cukup</strong> {{ $cukup_batas_bawah }}–{{ $laris_batas_bawah - 1 }}</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                     <span class="w-3 h-3 rounded-full bg-red-500 shrink-0"></span>
-                    <span class="text-gray-600 dark:text-gray-400"><strong>Kurang Laris</strong> &lt; 200</span>
+                    <span class="text-gray-600 dark:text-gray-400"><strong>Kurang Laris</strong> &lt; {{ $cukup_batas_bawah }}</span>
                 </div>
             </div>
         </div>
@@ -398,6 +515,49 @@
         </div>
         @endif
     </div>
+
+    {{-- ── Stat bar ──────────────────────────────────────────────────────── --}}
+    <div class="grid grid-cols-3 gap-4 mb-8">
+        @foreach([
+            ['label' => 'K Optimal',        'value' => $bestK,
+             'sub' => 'Jumlah klaster terbaik'],
+            ['label' => 'Silhouette Score',  'value' => number_format($silhouetteScore, 3),
+             'sub' => $silhouetteScore >= 0.7 ? 'Kualitas tinggi' : ($silhouetteScore >= 0.5 ? 'Kualitas sedang' : 'Kualitas rendah')],
+            ['label' => 'Menu Dianalisis',   'value' => $totalMenu,
+             'sub' => 'Dari data riwayat pesanan'],
+        ] as $s)
+            <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm">
+                <p class="text-xs text-gray-400 uppercase tracking-widest mb-2">{{ $s['label'] }}</p>
+                <p class="text-3xl font-bold text-gray-800 dark:text-white">{{ $s['value'] }}</p>
+                <p class="text-xs text-gray-400 mt-1">{{ $s['sub'] }}</p>
+            </div>
+        @endforeach
+    </div>
+
+    {{-- ── Log Tahapan Analisis ─────────────────────────────────────────── --}}
+    @if(count($preprocessLogs))
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-8 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                Tahapan Analisis Data
+            </h2>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Keterangan proses yang terjadi pada modul Klasterisasi Menu Penjualan</p>
+        </div>
+        <div class="divide-y divide-gray-50 dark:divide-gray-700/40">
+            @foreach($preprocessLogs as $i => $log)
+                <div class="flex items-start gap-4 px-6 py-4">
+                    <span class="shrink-0 w-6 h-6 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-xs font-bold flex items-center justify-center mt-0.5">
+                        {{ $i + 1 }}
+                    </span>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $log['tahap'] }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $log['detail'] }}</p>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 
 @endif {{-- end hasResult --}}
 

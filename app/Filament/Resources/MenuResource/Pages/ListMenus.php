@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\MenuResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\MenuResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListMenus extends ListRecords
@@ -14,7 +13,9 @@ class ListMenus extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->createAnother(false)
+                ->modal(),
         ];
     }
 }

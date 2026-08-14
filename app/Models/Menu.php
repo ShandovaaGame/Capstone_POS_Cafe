@@ -2,36 +2,81 @@
 
 namespace App\Models;
 
+use App\Services\MenuImageService;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 class Menu extends Model
 {
+    use HasFactory, SoftDeletes;
     protected $fillable = [
         'category_id',
         'name',
-        'slug',
         'description',
         'price',
-        'harga_modal',
         'cashback',
         'image',
         'is_available',
-        'is_stock_calculated',
         'is_student_discount',
         'student_price',
     ];
 
+    protected $appends = ['image_url', 'stock'];
+
     protected function casts(): array
     {
         return [
-            'price'               => 'decimal:2',
-            'harga_modal'         => 'decimal:2',
-            'cashback'            => 'integer',
-            'student_price'       => 'decimal:2',
-            'is_available'        => 'boolean',
-            'is_stock_calculated' => 'boolean',
+            'price' => 'integer',
+            'cashback' => 'integer',
+            'student_price' => 'integer',
+            'is_available' => 'boolean',
             'is_student_discount' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(function (): void {
+            Cache::forget('customer_menu_v3');
+        });
+
+        static::deleted(function (self $menu): void {
+            app(MenuImageService::class)->delete($menu->image);
+            Cache::forget('customer_menu_v3');
+        });
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image ? url('storage/' . $this->image) : null;
+    }
+
+    public function getStockAttribute(): ?float
+    {
+        $ingredients = $this->menuIngredients()->with('ingredient')->get();
+        if ($ingredients->isEmpty()) {
+            return null;
+        }
+        $minServings = null;
+        foreach ($ingredients as $mi) {
+            if (! $mi->ingredient) continue;
+            $totalStock = (float) $mi->ingredient->batches()
+                ->where('quantity', '>', 0)
+                ->where(function ($q) {
+                    $q->whereNull('expiry_date')
+                      ->orWhereDate('expiry_date', '>', now())
+                      ->orWhere('allow_expired_usage', true);
+                })
+                ->sum('quantity') ?: 0;
+            $needed = (float) $mi->quantity_used;
+            $servings = $needed > 0 ? (int) ($totalStock / $needed) : 0;
+            if ($minServings === null || $servings < $minServings) {
+                $minServings = $servings;
+            }
+        }
+        return $minServings ?? 0;
     }
 
     public function category()
@@ -80,24 +125,11 @@ class Menu extends Model
 
     public function hasRecipe(): bool
     {
-        return $this->menuIngredients()->exists();
-    }
-
-    public function refreshStockCalculatedFlag(): void
-    {
-        $hasRecipe = $this->menuIngredients()->exists();
-
-        if ($this->is_stock_calculated !== $hasRecipe) {
-            $this->forceFill([
-                'is_stock_calculated' => $hasRecipe,
-            ])->saveQuietly();
-        }
+        return true;
     }
 
     public function getEffectivePriceAttribute(): string
     {
-        return ($this->is_student_discount && $this->student_price)
-            ? $this->student_price
-            : $this->price;
+        return $this->student_price ?: $this->price;
     }
 }

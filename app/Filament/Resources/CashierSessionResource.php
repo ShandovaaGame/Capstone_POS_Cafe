@@ -2,24 +2,20 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\CashierSessionResource\Pages\ListCashierSessions;
 use App\Filament\Resources\CashierSessionResource\Pages\CreateCashierSession;
 use App\Filament\Resources\CashierSessionResource\Pages\EditCashierSession;
-use App\Filament\Resources\CashierSessionResource\Pages;
+use App\Filament\Resources\CashierSessionResource\Pages\ListCashierSessions;
 use App\Models\CashierSession;
-use Filament\Forms;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 
 class CashierSessionResource extends Resource
@@ -30,7 +26,7 @@ class CashierSessionResource extends Resource
 
     protected static string | \UnitEnum | null $navigationGroup = 'Transaksi';
 
-    protected static ?string $navigationLabel = 'Cashier Sessions';
+    protected static ?string $navigationLabel = 'Sesi Kasir';
 
     protected static ?int $navigationSort = 2;
 
@@ -38,32 +34,20 @@ class CashierSessionResource extends Resource
     {
         return $schema->components([
             Select::make('user_id')
-                ->label('Cashier')
+                ->label('Kasir')
                 ->relationship('user', 'name')
                 ->required()
                 ->searchable()
                 ->preload(),
-            DateTimePicker::make('shift_start')
-                ->label('Start Time')
+            DateTimePicker::make('started_at')
+                ->label('Waktu Mulai')
                 ->required()
                 ->default(now())
                 ->native(false),
-            DateTimePicker::make('shift_end')
-                ->label('End Time')
+            DateTimePicker::make('ended_at')
+                ->label('Waktu Selesai')
                 ->nullable()
                 ->native(false),
-            TextInput::make('total_sales')
-                ->label('Total Sales')
-                ->numeric()
-                ->minValue(0)
-                ->default(0)
-                ->prefix('Rp'),
-            TextInput::make('total_transactions')
-                ->label('Total Transactions')
-                ->numeric()
-                ->integer()
-                ->minValue(0)
-                ->default(0),
         ])->columns(2);
     }
 
@@ -71,47 +55,35 @@ class CashierSessionResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('Session ID')
-                    ->limit(12)
-                    ->tooltip(fn (CashierSession $record) => $record->id)
-                    ->sortable(),
                 TextColumn::make('user.name')
-                    ->label('Cashier')
+                    ->label('Kasir')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('shift_start')
-                    ->label('Shift Start')
+                TextColumn::make('started_at')
+                    ->label('Mulai')
                     ->dateTime('d M Y, H:i')
                     ->sortable(),
-                TextColumn::make('shift_end')
-                    ->label('Shift End')
+                TextColumn::make('ended_at')
+                    ->label('Selesai')
                     ->dateTime('d M Y, H:i')
                     ->default('-')
                     ->sortable(),
-                TextColumn::make('status')
+                TextColumn::make('is_active')
                     ->label('Status')
                     ->badge()
-                    ->getStateUsing(fn (CashierSession $record) => $record->isActive() ? 'Active' : 'Completed')
-                    ->color(fn (string $state): string => $state === 'Active' ? 'success' : 'gray'),
-                TextColumn::make('total_sales')
-                    ->label('Total Sales')
-                    ->money('IDR')
-                    ->sortable(),
-                TextColumn::make('total_transactions')
-                    ->label('Transactions')
-                    ->sortable(),
+                    ->getStateUsing(fn (CashierSession $record) => $record->is_active ? 'Aktif' : 'Selesai')
+                    ->color(fn (string $state): string => $state === 'Aktif' ? 'success' : 'gray'),
                 TextColumn::make('duration')
-                    ->label('Duration (hours)')
+                    ->label('Durasi (jam)')
                     ->getStateUsing(fn (CashierSession $record) => $record->duration !== null ? number_format($record->duration, 2) : '-')
                     ->toggleable(),
             ])
             ->filters([
                 Filter::make('active')
-                    ->label('Active Sessions')
+                    ->label('Sesi Aktif')
                     ->query(fn ($query) => $query->active()),
                 Filter::make('today')
-                    ->label('Today')
+                    ->label('Hari Ini')
                     ->query(fn ($query) => $query->today()),
             ])
             ->recordActions([
@@ -123,15 +95,15 @@ class CashierSessionResource extends Resource
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('shift_start', 'desc');
+            ->defaultSort('started_at', 'desc');
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => ListCashierSessions::route('/'),
+            'index'  => ListCashierSessions::route('/'),
             'create' => CreateCashierSession::route('/create'),
-            'edit' => EditCashierSession::route('/{record}/edit'),
+            'edit'   => EditCashierSession::route('/{record}/edit'),
         ];
     }
 }

@@ -1,0 +1,92 @@
+/* resources/css/filament/financial-table.css */
+/* Compact spreadsheet-style table for Filament financial reports */
+/* ALL rules scoped under .financial-report-wrapper to avoid affecting other Filament tables */
+/* Registered via FilamentAsset::register() in AppServiceProvider */
+
+/* ---- Compact row styling ---- */
+.financial-report-wrapper .fi-ta-cell {
+    padding: 0.25rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    line-height: 1rem !important;
+}
+
+/* ---- Grid borders for spreadsheet feel ---- */
+.financial-report-wrapper .fi-ta-row .fi-ta-cell {
+    border-right: 1px solid #E5E7EB !important;
+}
+.dark .financial-report-wrapper .fi-ta-row .fi-ta-cell {
+    border-right-color: #374151 !important;
+}
+
+.financial-report-wrapper .fi-ta-row .fi-ta-cell:last-child {
+    border-right: none !important;
+}
+
+/* ---- Header styling ---- */
+.financial-report-wrapper .fi-ta-header-cell {
+    border-bottom: 2px solid #D1D5DB !important;
+    background-color: #F9FAFB !important;
+    font-size: 10px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-weight: 600 !important;
+    padding: 0.5rem 0.75rem !important;
+    color: #374151 !important;
+}
+.dark .financial-report-wrapper .fi-ta-header-cell {
+    border-bottom-color: #4B5563 !important;
+    background-color: #111827 !important;
+    color: #D1D5DB !important;
+}
+
+/* ---- Amount columns - right aligned, tabular-nums ---- */
+.financial-report-wrapper .amount-column {
+    text-align: right !important;
+    font-variant-numeric: tabular-nums !important;
+}
+
+/* ---- Section row - light blue background ---- */
+.financial-report-wrapper .section-row {
+    background-color: #EEF2FF !important;
+}
+.dark .financial-report-wrapper .section-row {
+    background-color: rgba(99, 102, 241, 0.1) !important;
+}
+
+/* ---- Total row styling ---- */
+.financial-report-wrapper .total-row {
+    font-weight: 600 !important;
+    border-top: 2px solid #9CA3AF !important;
+}
+.dark .financial-report-wrapper .total-row {
+    border-top-color: #6B7280 !important;
+}
+
+/* ---- Grand Total - double border, background ---- */
+.financial-report-wrapper .grand-total-row {
+    font-weight: 700 !important;
+    border-top: 3px double #374151 !important;
+    background-color: #F3F4F6 !important;
+}
+.dark .financial-report-wrapper .grand-total-row {
+    border-top-color: #9CA3AF !important;
+    background-color: rgba(55, 65, 81, 0.3) !important;
+}
+
+/* ---- Indentation levels ---- */
+.financial-report-wrapper .indent-1 { padding-left: 1.5rem !important; }
+.financial-report-wrapper .indent-2 { padding-left: 2.5rem !important; }
+.financial-report-wrapper .indent-3 { padding-left: 3.5rem !important; }
+
+/* ---- Compact table container ---- */
+.financial-report-wrapper .fi-ta-ctn {
+    border-collapse: separate !important;
+}
+
+/* ---- Hover effect for data rows but not header/section/total rows ---- */
+.financial-report-wrapper .fi-ta-row:not(.section-row):not(.total-row):not(.grand-total-row):hover {
+    background-color: #F9FAFB !important;
+}
+.dark .financial-report-wrapper .fi-ta-row:not(.section-row):not(.total-row):not(.grand-total-row):hover {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+}

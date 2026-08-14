@@ -16,7 +16,7 @@ class StatsOverview extends StatsOverviewWidget
     protected function getStats(): array
     {
         // 1 query: ambil penjualan 7 hari terakhir sekaligus
-        $salesByDay = Order::where('is_paid', true)
+        $salesByDay = Order::where('status', Order::STATUS_SELESAI)
             ->whereBetween(DB::raw('created_at::date'), [today()->subDays(6)->toDateString(), today()->toDateString()])
             ->selectRaw("created_at::date as day, SUM(total_amount) as total")
             ->groupBy('day')

@@ -45,7 +45,7 @@
     @endphp
 
     {{-- ── Panel per prediksi ─────────────────────────────────────────── --}}
-    <div class="rounded-xl border {{ $idx === 0 ? 'border-primary-300 dark:border-primary-700' : 'border-gray-200 dark:border-gray-700' }} bg-white dark:bg-gray-800 mb-8 overflow-hidden shadow-sm">
+    <div class="rounded-xl border {{ $idx === 0 ? 'border-primary-300 dark:border-primary-700' : 'border-gray-200 dark:border-gray-700' }} bg-white dark:bg-gray-800 mb-8 shadow-sm">
 
         {{-- Header panel --}}
         <div class="px-6 py-4 {{ $idx === 0 ? 'bg-primary-50 dark:bg-primary-900/20 border-b border-primary-200 dark:border-primary-700' : 'bg-gray-50 dark:bg-gray-700/30 border-b border-gray-200 dark:border-gray-700' }}">
@@ -87,35 +87,35 @@
 
         {{-- ── TABEL LAPORAN PREDIKSI + MAE, RMSE, MAPE, SMAPE ─────────── --}}
         @if(count($predictions))
-        <div class="px-6 pt-6 pb-2">
-            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-1">
+        <div class="px-6 pt-5 pb-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40">
+            <h3 class="text-sm font-bold text-gray-800 dark:text-white">
                 Laporan Prediksi Jumlah Penggunaan Bahan Baku 2 Hari ke Depan
             </h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Nilai MAE, RMSE, MAPE, dan SMAPE menunjukkan akurasi model Prophet untuk tiap bahan baku — semakin kecil semakin akurat.
             </p>
         </div>
-        <div class="overflow-x-auto mb-6">
-            <table style="width:100%; border-collapse:collapse;">
+        <div class="overflow-x-auto mb-6" style="overflow-x:auto;">
+            <table style="width:max-content; min-width:100%; border-collapse:collapse;">
                 <thead>
                     <tr style="background-color:#1e40af;">
-                        <th style="padding:12px 18px; text-align:left;   font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Nama Bahan Baku</th>
-                        <th style="padding:12px 18px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Satuan</th>
+                        <th style="padding:11px 16px; text-align:left;   font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; min-width:160px;">Nama Bahan Baku</th>
+                        <th style="padding:11px 12px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; min-width:60px;">Satuan</th>
                         @if(count($forecastDays) > 0)
-                        <th style="padding:12px 18px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">
-                            Hari 1 &mdash; {{ $forecastDays[0]['hari'] ?? '' }}, {{ $forecastDays[0]['tanggal'] ?? '' }}
+                        <th style="padding:11px 12px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; min-width:110px;">
+                            Hari 1<br><span style="font-weight:400; font-size:0.65rem; opacity:0.85;">{{ $forecastDays[0]['hari'] ?? '' }}, {{ $forecastDays[0]['tanggal'] ?? '' }}</span>
                         </th>
                         @endif
                         @if(count($forecastDays) > 1)
-                        <th style="padding:12px 18px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">
-                            Hari 2 &mdash; {{ $forecastDays[1]['hari'] ?? '' }}, {{ $forecastDays[1]['tanggal'] ?? '' }}
+                        <th style="padding:11px 12px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; min-width:110px;">
+                            Hari 2<br><span style="font-weight:400; font-size:0.65rem; opacity:0.85;">{{ $forecastDays[1]['hari'] ?? '' }}, {{ $forecastDays[1]['tanggal'] ?? '' }}</span>
                         </th>
                         @endif
-                        <th style="padding:12px 18px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">Total</th>
-                        <th style="padding:12px 18px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">MAE</th>
-                        <th style="padding:12px 18px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">RMSE</th>
-                        <th style="padding:12px 18px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">MAPE (%)</th>
-                        <th style="padding:12px 18px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;">SMAPE (%)</th>
+                        <th style="padding:11px 12px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; min-width:70px;">Total</th>
+                        <th style="padding:11px 12px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; min-width:70px;">MAE</th>
+                        <th style="padding:11px 12px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; min-width:70px;">RMSE</th>
+                        <th style="padding:11px 12px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; min-width:85px;">MAPE (%)</th>
+                        <th style="padding:11px 12px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; min-width:85px;">SMAPE (%)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -125,58 +125,58 @@
                         $mape = $pred['mape'] ?? 0;
                     @endphp
                     <tr style="background-color:{{ $ri % 2 === 0 ? '#ffffff' : '#f8fafc' }}; border-bottom:1px solid #e2e8f0;">
-                        <td style="padding:11px 18px; font-size:0.875rem; font-weight:600; color:#1e40af; white-space:nowrap;">
+                        <td style="padding:11px 16px; font-size:0.875rem; font-weight:600; color:#1e40af; white-space:nowrap;">
                             {{ $pred['nama_bahan_baku'] }}
                         </td>
-                        <td style="padding:11px 18px; text-align:center;">
-                            <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:2px 10px; border-radius:9999px; font-size:0.75rem; font-weight:600;">
+                        <td style="padding:11px 12px; text-align:center;">
+                            <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:9999px; font-size:0.75rem; font-weight:600;">
                                 {{ $pred['satuan'] ?? '-' }}
                             </span>
                         </td>
 
                         {{-- Hari 1 --}}
                         @if(isset($fc[0]))
-                        <td style="padding:11px 18px; text-align:center;">
-                            <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:3px 14px; border-radius:9999px; font-size:0.875rem; font-weight:700;">
+                        <td style="padding:11px 12px; text-align:center;">
+                            <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:3px 10px; border-radius:9999px; font-size:0.875rem; font-weight:700;">
                                 {{ $fc[0]['prediksi'] ?? '-' }}
                             </span>
                             <div style="font-size:0.7rem; color:#94a3b8; margin-top:3px;">{{ $fc[0]['day_type'] ?? '' }}</div>
                         </td>
                         @elseif(count($forecastDays) > 0)
-                        <td style="padding:11px 18px; text-align:center; color:#94a3b8; font-size:0.875rem;">—</td>
+                        <td style="padding:11px 12px; text-align:center; color:#94a3b8; font-size:0.875rem;">—</td>
                         @endif
 
                         {{-- Hari 2 --}}
                         @if(isset($fc[1]))
-                        <td style="padding:11px 18px; text-align:center;">
-                            <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:3px 14px; border-radius:9999px; font-size:0.875rem; font-weight:700;">
+                        <td style="padding:11px 12px; text-align:center;">
+                            <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:3px 10px; border-radius:9999px; font-size:0.875rem; font-weight:700;">
                                 {{ $fc[1]['prediksi'] ?? '-' }}
                             </span>
                             <div style="font-size:0.7rem; color:#94a3b8; margin-top:3px;">{{ $fc[1]['day_type'] ?? '' }}</div>
                         </td>
                         @elseif(count($forecastDays) > 1)
-                        <td style="padding:11px 18px; text-align:center; color:#94a3b8; font-size:0.875rem;">—</td>
+                        <td style="padding:11px 12px; text-align:center; color:#94a3b8; font-size:0.875rem;">—</td>
                         @endif
 
                         {{-- Total --}}
-                        <td style="padding:11px 18px; text-align:right; font-size:0.875rem; font-weight:700; color:#0f172a;">
+                        <td style="padding:11px 12px; text-align:right; font-size:0.875rem; font-weight:700; color:#0f172a;">
                             {{ number_format($pred['total_forecast'] ?? 0, 1) }}
                         </td>
                         {{-- MAE --}}
-                        <td style="padding:11px 18px; text-align:right; font-size:0.875rem; color:#374151;">
+                        <td style="padding:11px 12px; text-align:right; font-size:0.875rem; color:#374151;">
                             {{ number_format($pred['mae'] ?? 0, 2) }}
                         </td>
                         {{-- RMSE --}}
-                        <td style="padding:11px 18px; text-align:right; font-size:0.875rem; color:#374151;">
+                        <td style="padding:11px 12px; text-align:right; font-size:0.875rem; color:#374151;">
                             {{ number_format($pred['rmse'] ?? 0, 2) }}
                         </td>
                         {{-- MAPE --}}
-                        <td style="padding:11px 18px; text-align:right; font-size:0.875rem; font-weight:600;
+                        <td style="padding:11px 12px; text-align:right; font-size:0.875rem; font-weight:700;
                             color:{{ $mape <= 10 ? '#16a34a' : ($mape <= 25 ? '#d97706' : '#dc2626') }};">
                             {{ number_format($mape, 2) }}%
                         </td>
                         {{-- SMAPE --}}
-                        <td style="padding:11px 18px; text-align:right; font-size:0.875rem; color:#374151;">
+                        <td style="padding:11px 12px; text-align:right; font-size:0.875rem; color:#374151;">
                             {{ number_format($pred['smape'] ?? 0, 2) }}%
                         </td>
                     </tr>
@@ -188,18 +188,20 @@
 
         {{-- ── ANALISIS RATA-RATA WEEKDAY VS WEEKEND ────────────────────── --}}
         @if(! empty($result['chart_feature_importance']))
-        <div class="px-6 pb-2">
-            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-1">
-                Analisis Rata-rata Jumlah Penggunaan Bahan Baku: Weekday vs Weekend
-            </h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                Perbandingan rata-rata jumlah penggunaan tiap bahan baku pada hari kerja dan akhir pekan berdasarkan data historis yang digunakan.
-                Memperlihatkan seberapa besar perbedaan pengaruh weekend dan weekday terhadap penggunaan tiap bahan baku.
-            </p>
-        </div>
-        <div class="px-6 pb-6">
-            <img src="data:image/png;base64,{{ $result['chart_feature_importance'] }}"
-                 alt="Weekday vs Weekend" class="w-full rounded-lg border border-gray-100 dark:border-gray-700"/>
+        <div class="mx-6 mb-6 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+                <h3 class="text-sm font-bold text-gray-800 dark:text-white">
+                    Analisis Rata-rata Jumlah Penggunaan Bahan Baku: Weekday vs Weekend
+                </h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Perbandingan rata-rata jumlah penggunaan tiap bahan baku pada hari kerja dan akhir pekan berdasarkan data historis yang digunakan.
+                    Memperlihatkan seberapa besar perbedaan pengaruh weekend dan weekday terhadap penggunaan tiap bahan baku.
+                </p>
+            </div>
+            <div class="p-5">
+                <img src="data:image/png;base64,{{ $result['chart_feature_importance'] }}"
+                     alt="Weekday vs Weekend" class="w-full rounded-lg"/>
+            </div>
         </div>
         @endif
 

@@ -189,7 +189,7 @@
     <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mb-6 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h2 class="text-sm font-bold text-gray-900 dark:text-white">Output 2 — Total Prediksi Penggunaan per Bahan Baku</h2>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Perbandingan jumlah prediksi penggunaan seluruh bahan baku dalam 2 hari ke depan</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Perbandingan jumlah prediksi penggunaan seluruh bahan baku dalam 7 hari ke depan</p>
         </div>
         <div class="p-5">
             <img src="data:image/png;base64,{{ $chartForecastAll }}" alt="Forecast All" class="w-full rounded-lg border border-gray-100 dark:border-gray-700"/>
@@ -207,7 +207,7 @@
         <div class="px-6 py-4">
             <h2 class="text-sm font-bold text-gray-900 dark:text-white">Output 3 — Detail Prediksi Penggunaan per Bahan Baku</h2>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Prediksi 2 hari ke depan: <span class="font-medium">{{ $dateForecastFrom }}</span> s/d <span class="font-medium">{{ $dateForecastTo }}</span>
+                Prediksi 7 hari ke depan: <span class="font-medium">{{ $dateForecastFrom }}</span> s/d <span class="font-medium">{{ $dateForecastTo }}</span>
                 — satu kartu per bahan baku
             </p>
         </div>

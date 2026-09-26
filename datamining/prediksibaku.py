@@ -209,7 +209,7 @@ def run_prediction_pipeline_bahan_baku(df: pd.DataFrame) -> dict:
 
         # Prediksi 2 hari ke depan
         last_date    = df_p["ds"].max()
-        future_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=2, freq="D")
+        future_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=7, freq="D")
         future_df    = pd.DataFrame({"ds": future_dates})
         future_df["is_weekend"] = (future_df["ds"].dt.dayofweek >= 5).astype(int)
         future_fc    = model.predict(future_df)
@@ -243,7 +243,7 @@ def run_prediction_pipeline_bahan_baku(df: pd.DataFrame) -> dict:
             "nama_bahan_baku": bahan,
             "satuan":          satuan,
             "total_forecast":  round(total_fc, 1),
-            "avg_per_day":     round(total_fc / 2, 1),
+            "avg_per_day":     round(total_fc / 7, 1),
             "mae":             round(mae_v,   2),
             "rmse":            round(rmse_v,  2),
             "mape":            round(mape_v,  2),
@@ -432,7 +432,7 @@ def run_prediction_pipeline_bahan_baku(df: pd.DataFrame) -> dict:
     return {
         "status":             "success",
         "total_ingredients":  n,
-        "forecast_days":      2,
+        "forecast_days":      7,
         "date_range":         {"from": str(min_date.date()), "to": str(max_date.date())},
         "forecast_range":     {"from": fc_from, "to": fc_to},
         "predictions":        predictions_out,

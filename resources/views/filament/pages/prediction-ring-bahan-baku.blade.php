@@ -80,7 +80,7 @@
                     </div>
                 </div>
                 <span class="text-xs text-gray-400 dark:text-gray-500 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-full px-3 py-1">
-                    {{ $result['total_ingredients'] ?? 0 }} bahan baku · {{ $result['forecast_days'] ?? 2 }} hari prediksi
+                    {{ $result['total_ingredients'] ?? 0 }} bahan baku · {{ $result['forecast_days'] ?? count($forecastDays) }} hari prediksi
                 </span>
             </div>
         </div>
@@ -89,7 +89,7 @@
         @if(count($predictions))
         <div class="px-6 pt-5 pb-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40">
             <h3 class="text-sm font-bold text-gray-800 dark:text-white">
-                Laporan Prediksi Jumlah Penggunaan Bahan Baku 2 Hari ke Depan
+                Laporan Prediksi Jumlah Penggunaan Bahan Baku {{ count($forecastDays) }} Hari ke Depan
             </h3>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Nilai MAE, RMSE, MAPE, dan SMAPE menunjukkan akurasi model Prophet untuk tiap bahan baku — semakin kecil semakin akurat.
@@ -101,16 +101,12 @@
                     <tr style="background-color:#1e40af;">
                         <th style="padding:11px 16px; text-align:left;   font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; min-width:160px;">Nama Bahan Baku</th>
                         <th style="padding:11px 12px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; min-width:60px;">Satuan</th>
-                        @if(count($forecastDays) > 0)
-                        <th style="padding:11px 12px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; min-width:110px;">
-                            Hari 1<br><span style="font-weight:400; font-size:0.65rem; opacity:0.85;">{{ $forecastDays[0]['hari'] ?? '' }}, {{ $forecastDays[0]['tanggal'] ?? '' }}</span>
-                        </th>
-                        @endif
-                        @if(count($forecastDays) > 1)
-                        <th style="padding:11px 12px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; min-width:110px;">
-                            Hari 2<br><span style="font-weight:400; font-size:0.65rem; opacity:0.85;">{{ $forecastDays[1]['hari'] ?? '' }}, {{ $forecastDays[1]['tanggal'] ?? '' }}</span>
-                        </th>
-                        @endif
+                        @foreach($forecastDays as $d => $fd)
+<th style="padding:11px 12px; text-align:center; font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; min-width:110px;">
+    Hari {{ $d + 1 }}<br>
+    <span style="font-weight:400; font-size:0.65rem; opacity:0.85;">{{ $fd['hari'] ?? '' }}, {{ $fd['tanggal'] ?? '' }}</span>
+</th>
+@endforeach
                         <th style="padding:11px 12px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; min-width:70px;">Total</th>
                         <th style="padding:11px 12px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; min-width:70px;">MAE</th>
                         <th style="padding:11px 12px; text-align:right;  font-size:0.7rem; font-weight:600; color:#ffffff; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; min-width:70px;">RMSE</th>
@@ -134,29 +130,21 @@
                             </span>
                         </td>
 
-                        {{-- Hari 1 --}}
-                        @if(isset($fc[0]))
-                        <td style="padding:11px 12px; text-align:center;">
-                            <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:3px 10px; border-radius:9999px; font-size:0.875rem; font-weight:700;">
-                                {{ $fc[0]['prediksi'] ?? '-' }}
-                            </span>
-                            <div style="font-size:0.7rem; color:#94a3b8; margin-top:3px;">{{ $fc[0]['day_type'] ?? '' }}</div>
-                        </td>
-                        @elseif(count($forecastDays) > 0)
-                        <td style="padding:11px 12px; text-align:center; color:#94a3b8; font-size:0.875rem;">—</td>
-                        @endif
-
-                        {{-- Hari 2 --}}
-                        @if(isset($fc[1]))
-                        <td style="padding:11px 12px; text-align:center;">
-                            <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:3px 10px; border-radius:9999px; font-size:0.875rem; font-weight:700;">
-                                {{ $fc[1]['prediksi'] ?? '-' }}
-                            </span>
-                            <div style="font-size:0.7rem; color:#94a3b8; margin-top:3px;">{{ $fc[1]['day_type'] ?? '' }}</div>
-                        </td>
-                        @elseif(count($forecastDays) > 1)
-                        <td style="padding:11px 12px; text-align:center; color:#94a3b8; font-size:0.875rem;">—</td>
-                        @endif
+                        @foreach($forecastDays as $d => $fd)
+    @if(isset($fc[$d]))
+    <td style="padding:11px 12px; text-align:center;">
+        <span style="display:inline-block; background:#e0e7ff; color:#3730a3; padding:3px 10px; border-radius:9999px; font-size:0.875rem; font-weight:700;">
+            {{ number_format($fc[$d]['prediksi'] ?? 0, 1) }}
+        </span>
+        <div style="font-size:0.66rem; color:#64748b; margin-top:4px; white-space:nowrap;">
+            ({{ number_format($fc[$d]['batas_bawah'] ?? 0, 1) }} – {{ number_format($fc[$d]['batas_atas'] ?? 0, 1) }})
+        </div>
+        <div style="font-size:0.7rem; color:#94a3b8; margin-top:2px;">{{ $fc[$d]['day_type'] ?? '' }}</div>
+    </td>
+    @else
+    <td style="padding:11px 12px; text-align:center; color:#94a3b8; font-size:0.875rem;">—</td>
+    @endif
+@endforeach
 
                         {{-- Total --}}
                         <td style="padding:11px 12px; text-align:right; font-size:0.875rem; font-weight:700; color:#0f172a;">

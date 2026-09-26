@@ -479,7 +479,7 @@ def run_prediction_pipeline(df: pd.DataFrame) -> dict:
     chart_all_items, charts_per_menu = plot_per_item(items, item_data, forecasts)
 
     # ── Tahap 5: Prediksi 2 hari ke depan (cell 33) ───────────────────────
-    future_dates = [max_date + pd.Timedelta(days=i) for i in range(1, 3)]
+    future_dates = [max_date + pd.Timedelta(days=i) for i in range(1, 8)]
     future_df    = pd.DataFrame({
         "ds":         future_dates,
         "is_weekend": [1 if d.dayofweek >= 5 else 0 for d in future_dates],
@@ -536,12 +536,12 @@ def run_prediction_pipeline(df: pd.DataFrame) -> dict:
     summary_table.sort(key=lambda x: x["total_forecast"], reverse=True)
 
     d1_name = HARI_ID.get(future_dates[0].strftime("%A"), "")
-    d2_name = HARI_ID.get(future_dates[1].strftime("%A"), "")
+    d2_name = HARI_ID.get(future_dates[-1].strftime("%A"), "")
     logs.append({
-        "tahap":  "Prediksi 2 Hari ke Depan",
+        "tahap":  f"Prediksi {len(future_dates)} Hari ke Depan",
         "detail": (
             f"Forecast: {future_dates[0].date()} ({d1_name}) "
-            f"dan {future_dates[1].date()} ({d2_name})."
+            f"dan {future_dates[-1].date()} ({d2_name})."
         ),
     })
 
@@ -559,7 +559,7 @@ def run_prediction_pipeline(df: pd.DataFrame) -> dict:
         )
     ax_sum.set_title(
         f"Total Prediksi Penjualan per Menu\n"
-        f"{future_dates[0].date()} ({d1_name})  s/d  {future_dates[1].date()} ({d2_name})",
+        f"{future_dates[0].date()} ({d1_name})  s/d  {future_dates[-1].date()} ({d2_name})",
         fontsize=11, fontweight="bold", pad=12,
     )
     ax_sum.set_xlabel("Nama Menu", labelpad=8)
@@ -573,14 +573,14 @@ def run_prediction_pipeline(df: pd.DataFrame) -> dict:
     return {
         "status":             "success",
         "total_menu":         int(len(items)),
-        "forecast_days":      2,
+        "forecast_days":      len(future_dates),
         "date_range":         {
             "from": str(min_date.date()),
             "to":   str(max_date.date()),
         },
         "forecast_range":     {
             "from": str(future_dates[0].date()),
-            "to":   str(future_dates[1].date()),
+            "to":   str(future_dates[-1].date()),
         },
         "preprocessing_logs": logs,
         "predictions":        predictions_out,
